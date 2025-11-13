@@ -1,0 +1,168 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUPERADMIN
+  TEACHER
+  STUDENT
+  PARENT
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  role      UserRole
+  teacherId String?  // For multi-tenant: links students/parents to teacher
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  teacher        User?   @relation("TeacherStudents", fields: [teacherId], references: [id])
+  students       User[]  @relation("TeacherStudents")
+  parentStudents ParentStudent[]
+  subscriptions  Subscription[]
+  assignments    Assignment[]
+  progressLogs   ProgressLog[]
+  messages       Message[] @relation("MessageSender")
+  receivedMessages Message[] @relation("MessageReceiver")
+
+  @@index([teacherId])
+  @@index([role])
+}
+
+model ParentStudent {
+  id        String   @id @default(cuid())
+  parentId  String
+  studentId String
+  createdAt DateTime @default(now())
+
+  parent  User @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  student User @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([parentId, studentId])
+  @@index([parentId])
+  @@index([studentId])
+}
+
+model Lesson {
+  id        String   @id @default(cuid())
+  name      String
+  teacherId String?  // null = pre-built (global), non-null = teacher-specific
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  topics Topic[]
+
+  @@index([teacherId])
+}
+
+model Topic {
+  id        String   @id @default(cuid())
+  name      String
+  lessonId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lesson      Lesson      @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  resources   Resource[]
+  assignments Assignment[]
+
+  @@index([lessonId])
+}
+
+model Resource {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  topicId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@index([topicId])
+}
+
+model Assignment {
+  id           String    @id @default(cuid())
+  studentId    String
+  topicId      String
+  resourceId   String?
+  startDate    DateTime
+  endDate      DateTime
+  questionCount Int
+  dailyTarget  Int       @default(100) // Questions per day
+  examMode     Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  student User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  topic   Topic     @relation(fields: [topicId], references: [id])
+  logs    ProgressLog[]
+
+  @@index([studentId])
+  @@index([topicId])
+  @@index([startDate])
+  @@index([endDate])
+}
+
+model ProgressLog {
+  id           String    @id @default(cuid())
+  studentId    String
+  assignmentId String
+  date         DateTime  @db.Date
+  rightCount   Int       @default(0)
+  wrongCount   Int       @default(0)
+  emptyCount   Int       @default(0)
+  bonusCount   Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  student    User       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, assignmentId, date])
+  @@index([studentId])
+  @@index([assignmentId])
+  @@index([date])
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  teacherId String   @unique
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teacher User @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@index([endDate])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  senderId  String
+  receiverId String
+  content   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  sender   User @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
+}
+
