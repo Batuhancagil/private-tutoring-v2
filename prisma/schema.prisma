@@ -29,7 +29,8 @@ model User {
   // Relations
   teacher        User?   @relation("TeacherStudents", fields: [teacherId], references: [id])
   students       User[]  @relation("TeacherStudents")
-  parentStudents ParentStudent[]
+  parentStudentsAsParent  ParentStudent[] @relation("ParentRelation")
+  parentStudentsAsStudent ParentStudent[] @relation("StudentRelation")
   subscriptions  Subscription[]
   assignments    Assignment[]
   progressLogs   ProgressLog[]
@@ -46,8 +47,8 @@ model ParentStudent {
   studentId String
   createdAt DateTime @default(now())
 
-  parent  User @relation(fields: [parentId], references: [id], onDelete: Cascade)
-  student User @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  parent  User @relation("ParentRelation", fields: [parentId], references: [id], onDelete: Cascade)
+  student User @relation("StudentRelation", fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([parentId, studentId])
   @@index([parentId])
