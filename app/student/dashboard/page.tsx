@@ -29,10 +29,10 @@ export default async function StudentDashboardPage() {
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Today's Assignment</CardTitle>
+              <CardTitle>Today&apos;s Assignment</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm">View today's assigned topic and questions</p>
+              <p className="text-sm">View today&apos;s assigned topic and questions</p>
             </CardContent>
           </Card>
 

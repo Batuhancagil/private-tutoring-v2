@@ -22,7 +22,7 @@ export default async function ParentDashboardPage() {
             Parent Dashboard
           </h1>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
-            View your child's progress and communicate with teachers
+            View your child&apos;s progress and communicate with teachers
           </p>
         </div>
 
@@ -41,7 +41,7 @@ export default async function ParentDashboardPage() {
               <CardTitle>Messages</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm">Communicate with your child's teacher</p>
+              <p className="text-sm">Communicate with your child&apos;s teacher</p>
             </CardContent>
           </Card>
         </div>
