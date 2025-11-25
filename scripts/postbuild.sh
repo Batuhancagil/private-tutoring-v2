@@ -12,14 +12,24 @@ if [ -z "$DATABASE_URL" ]; then
 fi
 
 # Run migrations
+echo "📦 Executing: npx prisma migrate deploy"
 npx prisma migrate deploy
 
-if [ $? -ne 0 ]; then
-    echo "⚠️  WARNING: Migration failed, but continuing deployment"
-    exit 0
+MIGRATION_EXIT_CODE=$?
+
+if [ $MIGRATION_EXIT_CODE -ne 0 ]; then
+    echo "❌ ERROR: Migration failed with exit code $MIGRATION_EXIT_CODE"
+    echo "📋 Migration logs above should show the specific error"
+    echo "💡 Common issues:"
+    echo "   - Schema mismatch (schema.prisma doesn't match database)"
+    echo "   - Missing migration files"
+    echo "   - Database connection issues"
+    echo "   - Migration conflicts"
+    exit $MIGRATION_EXIT_CODE
 fi
 
 echo "✅ Migrations completed successfully"
+
 
 
 
