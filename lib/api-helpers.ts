@@ -6,21 +6,21 @@ import { UserRole } from '@prisma/client';
  * Get authenticated user from request
  * Returns null if not authenticated
  */
-export function getAuthUser(request: NextRequest): JWTPayload | null {
+export async function getAuthUser(request: NextRequest): Promise<JWTPayload | null> {
   const token = request.cookies.get('auth-token')?.value;
 
   if (!token) {
     return null;
   }
 
-  return verifyToken(token);
+  return await verifyToken(token);
 }
 
 /**
  * Require authentication - throws error if not authenticated
  */
-export function requireAuth(request: NextRequest): JWTPayload {
-  const user = getAuthUser(request);
+export async function requireAuth(request: NextRequest): Promise<JWTPayload> {
+  const user = await getAuthUser(request);
 
   if (!user) {
     throw new Error('Authentication required');
@@ -32,11 +32,11 @@ export function requireAuth(request: NextRequest): JWTPayload {
 /**
  * Require specific role - throws error if user doesn't have the role
  */
-export function requireRole(
+export async function requireRole(
   request: NextRequest,
   role: UserRole
-): JWTPayload {
-  const user = requireAuth(request);
+): Promise<JWTPayload> {
+  const user = await requireAuth(request);
 
   if (user.role !== role) {
     throw new Error(`Access denied: ${role} role required`);
@@ -48,11 +48,11 @@ export function requireRole(
 /**
  * Require one of multiple roles
  */
-export function requireAnyRole(
+export async function requireAnyRole(
   request: NextRequest,
   roles: UserRole[]
-): JWTPayload {
-  const user = requireAuth(request);
+): Promise<JWTPayload> {
+  const user = await requireAuth(request);
 
   if (!roles.includes(user.role)) {
     throw new Error(`Access denied: One of [${roles.join(', ')}] roles required`);
@@ -83,7 +83,7 @@ export function withAuth(
 ) {
   return async (request: NextRequest) => {
     try {
-      const user = requireAuth(request);
+      const user = await requireAuth(request);
       return await handler(request, user);
     } catch (error) {
       if (error instanceof Error && error.message === 'Authentication required') {
@@ -106,7 +106,7 @@ export function withRole(
 ) {
   return async (request: NextRequest) => {
     try {
-      const user = requireRole(request, role);
+      const user = await requireRole(request, role);
       return await handler(request, user);
     } catch (error) {
       if (error instanceof Error) {
@@ -137,7 +137,7 @@ export function withAnyRole(
 ) {
   return async (request: NextRequest) => {
     try {
-      const user = requireAnyRole(request, roles);
+      const user = await requireAnyRole(request, roles);
       return await handler(request, user);
     } catch (error) {
       if (error instanceof Error) {

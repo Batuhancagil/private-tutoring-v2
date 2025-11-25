@@ -1,0 +1,47 @@
+---
+description: Project Context - Git, Railway, and Railway DB
+globs:
+alwaysApply: true
+---
+
+# Project Infrastructure Context
+
+This project uses the following infrastructure that ALL agents must understand:
+
+## Version Control: Git
+
+- All code changes are tracked in Git
+- After completing stories, changes MUST be pushed to Git
+- Commit messages should follow: `feat: [story-key] description`
+- Railway automatically deploys on push to main/master branch
+
+## Deployment: Railway
+
+- Platform: Railway.app
+- Build system: Nixpacks (configured in `nixpacks.toml`)
+- Configuration: `railway.json`
+- Build process: `npm run db:generate` → `npm run build` → `scripts/postbuild.sh` → `npm start`
+- Environment: Railway provides `DATABASE_URL` automatically
+
+## Database: Railway PostgreSQL
+
+- ORM: Prisma
+- Schema: `prisma/schema.prisma`
+- Migrations: `prisma/migrations/`
+- Development: `npx prisma migrate dev --name <name>`
+- Production: Automatically handled by `scripts/postbuild.sh` via `npx prisma migrate deploy`
+
+## Migration Workflow
+
+1. Modify `prisma/schema.prisma`
+2. Create migration: `npx prisma migrate dev --name <migration-name>`
+3. Test locally
+4. Push to git - Railway runs migrations automatically on deploy
+
+**CRITICAL**: When schema changes are made, developers MUST inform the user that Railway DB migration will run automatically on next deployment, but migration should be created locally first.
+
+## Agent Responsibilities
+
+- **Dev Agent**: Push to git after story completion, check for migrations
+- **Build Error Agent**: Consider Railway deployment context when analyzing errors
+- **All Agents**: Understand Git workflow and Railway deployment pipeline

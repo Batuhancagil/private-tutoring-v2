@@ -23,7 +23,7 @@ Based on analysis of the PRD requirements, I've identified **10 epics** that gro
 
 ### Epic 1: Foundation & Authentication
 **Value:** Establishes the technical foundation and secure access control
-**Scope:** Project setup, infrastructure, authentication, multi-tenant architecture basics, basic UI framework, deployment pipeline
+**Scope:** Project setup, infrastructure, authentication, multi-tenant architecture basics, basic UI framework, deployment pipeline, monitoring & observability
 **Why First:** Required foundation for all subsequent work (greenfield project requirement)
 
 ### Epic 2: User & Resource Management  
@@ -78,7 +78,7 @@ Based on analysis of the PRD requirements, I've identified **10 epics** that gro
 - Epics 7-9: Supporting features
 - Epic 10: Optimization and polish
 
-**MVP Scope:** Epics 1-7 deliver complete MVP (Time Savings + Visibility focus)
+**MVP Scope:** Epics 1-8 deliver complete MVP (Time Savings + Visibility focus + Manual Subscriptions)
 
 ---
 
@@ -263,6 +263,53 @@ So that **data is protected in transit and at rest**.
 - Security headers (CSP, HSTS, etc.)
 - Data encryption at rest
 - Environment variable management for secrets
+
+---
+
+#### Story 1.7: Monitoring & Observability Setup
+
+As a **developer/operator**,
+I want **monitoring, logging, and observability infrastructure**,
+So that **I can debug issues, track performance, and monitor system health in production**.
+
+**Acceptance Criteria:**
+
+**Given** the application is deployed
+**When** I monitor the system
+**Then** I have:
+- Health check endpoint (`/api/health`) that returns system status
+- Structured error logging with context (console.error with context)
+- Error tracking for unhandled exceptions (error boundaries, API error handling)
+- Basic performance monitoring (response times, error rates)
+- Logging strategy documented (development vs production)
+
+**Given** an error occurs
+**When** I check logs
+**Then** errors include:
+- Context information (user, endpoint, timestamp)
+- Error message and stack trace
+- Request details (method, path, body if safe)
+- User ID and role (if authenticated)
+
+**Given** the system is running
+**When** I check health endpoint
+**Then** it returns:
+- Database connection status
+- Application status (running/healthy)
+- Timestamp of last check
+- Basic system metrics (optional)
+
+**Prerequisites:** Story 1.6
+
+**Technical Notes:**
+- Health check endpoint: `GET /api/health` (already exists, enhance if needed)
+- Error logging: Use `console.error()` with structured format: `[Context] Message`
+- Error boundaries: React error boundaries for client-side errors
+- API error handling: Consistent error response format (already defined in architecture)
+- Logging levels: Development (verbose) vs Production (errors only)
+- Consider future: Error tracking service (Sentry, LogRocket) for v2
+- Performance monitoring: Can use Railway metrics or add custom metrics
+- Log format: `[Context] Message` (e.g., `[Login] Authentication failed for username: john`)
 
 ---
 
@@ -1493,8 +1540,8 @@ So that **student data is protected**.
 
 **Total Epics:** 10
 **Total Stories:** 50+
-**MVP Epics:** 1-7 (Foundation through Parent Portal)
-**Growth Epics:** 8-9 (Subscription Management, Communication)
+**MVP Epics:** 1-8 (Foundation through Subscription Management)
+**Growth Epics:** 9 (Communication Features)
 **Polish Epic:** 10 (Mobile Optimization & Polish)
 
 **FR Coverage:** All 12 functional requirement areas covered

@@ -16,7 +16,7 @@ const roleRoutes: Record<string, string[]> = {
   PARENT: ['/parent'],
 };
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get('auth-token')?.value;
 
@@ -46,7 +46,7 @@ export function middleware(request: NextRequest) {
     }
 
     // Verify token
-    const payload = verifyToken(token);
+    const payload = await verifyToken(token);
     if (!payload) {
       // Invalid token, clear cookie and redirect
       const response = pathname.startsWith('/api')
@@ -79,7 +79,7 @@ export function middleware(request: NextRequest) {
 
   // If user is authenticated and tries to access login, redirect to dashboard
   if (pathname === '/login' && token) {
-    const payload = verifyToken(token);
+    const payload = await verifyToken(token);
     if (payload) {
       const dashboardUrl = getDashboardUrl(payload.role);
       return NextResponse.redirect(new URL(dashboardUrl, request.url));

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private Tutoring Platform - Color Theme Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .theme-preview { transition: all 0.3s ease; }
+        .color-swatch { transition: transform 0.2s; }
+        .color-swatch:hover { transform: scale(1.05); }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen text-gray-900">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">P</div>
+                <h1 class="text-xl font-semibold text-gray-900">UX Theme Explorer</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-sm text-gray-500">Select a theme to preview:</span>
+                <div class="flex bg-gray-100 p-1 rounded-lg">
+                    <button onclick="setTheme('trust')" class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors bg-white shadow-sm text-indigo-700" id="btn-trust">Trust (Blue)</button>
+                    <button onclick="setTheme('focus')" class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors text-gray-600 hover:text-gray-900" id="btn-focus">Focus (Teal)</button>
+                    <button onclick="setTheme('energy')" class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors text-gray-600 hover:text-gray-900" id="btn-energy">Energy (Violet)</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Theme Info Sidebar -->
+            <div class="lg:col-span-3 space-y-6">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h2 class="text-lg font-semibold mb-4">Color Palette</h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Primary</label>
+                            <div class="grid grid-cols-5 gap-2 mt-2">
+                                <div class="aspect-square rounded-lg bg-primary-50"></div>
+                                <div class="aspect-square rounded-lg bg-primary-100"></div>
+                                <div class="aspect-square rounded-lg bg-primary-500 ring-2 ring-offset-2 ring-primary-500" title="Primary Main"></div>
+                                <div class="aspect-square rounded-lg bg-primary-600"></div>
+                                <div class="aspect-square rounded-lg bg-primary-700"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Semantic Status</label>
+                            <div class="space-y-2 mt-2">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-4 h-4 rounded-full bg-green-500"></div>
+                                        <span class="text-sm text-gray-600">Success (On Track)</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-4 h-4 rounded-full bg-amber-500"></div>
+                                        <span class="text-sm text-gray-600">Warning (At Risk)</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-4 h-4 rounded-full bg-red-500"></div>
+                                        <span class="text-sm text-gray-600">Danger (Behind)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-6 border-t border-gray-100">
+                        <h3 class="text-sm font-semibold text-gray-900 mb-2" id="theme-name">Trust & Professional</h3>
+                        <p class="text-sm text-gray-500 leading-relaxed" id="theme-desc">
+                            A classic education palette using deep blues to convey reliability and authority. High contrast for readability and long working sessions.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Preview Area -->
+            <div class="lg:col-span-9 space-y-8">
+                
+                <!-- Dashboard Card Preview -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="border-b border-gray-200 px-6 py-4 flex justify-between items-center bg-gray-50">
+                        <h3 class="font-semibold text-gray-900">Student Progress Snapshot</h3>
+                        <button class="text-primary-600 text-sm font-medium hover:text-primary-700">View All Students &rarr;</button>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                                <thead>
+                                    <tr class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-100">
+                                        <th class="pb-3 pl-2">Student</th>
+                                        <th class="pb-3">Topic</th>
+                                        <th class="pb-3 text-center">Questions</th>
+                                        <th class="pb-3 text-center">Accuracy</th>
+                                        <th class="pb-3 text-right pr-2">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-sm">
+                                    <!-- Row 1: Good -->
+                                    <tr class="group hover:bg-gray-50 transition-colors">
+                                        <td class="py-4 pl-2">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-medium text-xs">JD</div>
+                                                <span class="font-medium text-gray-900">John Doe</span>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 text-gray-500">Quadratic Equations</td>
+                                        <td class="py-4 text-center">
+                                            <div class="flex flex-col items-center gap-1">
+                                                <span class="font-medium text-gray-900">85/100</span>
+                                                <div class="w-24 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                                    <div class="h-full bg-primary-500 w-[85%] rounded-full"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 text-center">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                92%
+                                            </span>
+                                        </td>
+                                        <td class="py-4 text-right pr-2">
+                                            <span class="text-green-600 font-medium text-xs">On Track</span>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Row 2: Warning -->
+                                    <tr class="group hover:bg-gray-50 transition-colors">
+                                        <td class="py-4 pl-2">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center font-medium text-xs">AS</div>
+                                                <span class="font-medium text-gray-900">Alice Smith</span>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 text-gray-500">Linear Functions</td>
+                                        <td class="py-4 text-center">
+                                            <div class="flex flex-col items-center gap-1">
+                                                <span class="font-medium text-gray-900">42/100</span>
+                                                <div class="w-24 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                                    <div class="h-full bg-amber-500 w-[42%] rounded-full"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 text-center">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                                                78%
+                                            </span>
+                                        </td>
+                                        <td class="py-4 text-right pr-2">
+                                            <span class="text-amber-600 font-medium text-xs">Needs Focus</span>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Row 3: Error -->
+                                    <tr class="group hover:bg-gray-50 transition-colors">
+                                        <td class="py-4 pl-2">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-8 h-8 rounded-full bg-red-50 text-red-700 flex items-center justify-center font-medium text-xs">MJ</div>
+                                                <span class="font-medium text-gray-900">Michael Jones</span>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 text-gray-500">Trigonometry</td>
+                                        <td class="py-4 text-center">
+                                            <div class="flex flex-col items-center gap-1">
+                                                <span class="font-medium text-gray-900">12/100</span>
+                                                <div class="w-24 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                                    <div class="h-full bg-red-500 w-[12%] rounded-full"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 text-center">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                65%
+                                            </span>
+                                        </td>
+                                        <td class="py-4 text-right pr-2">
+                                            <span class="text-red-600 font-medium text-xs">Behind</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- UI Components Row -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Buttons & Inputs -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
+                        <h3 class="font-semibold text-gray-900 border-b border-gray-100 pb-2">Interactive Elements</h3>
+                        
+                        <div class="space-y-4">
+                            <div class="flex flex-wrap gap-3">
+                                <button class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-md font-medium text-sm shadow-sm transition-all focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                    Primary Action
+                                </button>
+                                <button class="px-4 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-md font-medium text-sm shadow-sm transition-all">
+                                    Secondary
+                                </button>
+                                <button class="px-4 py-2 bg-primary-50 text-primary-700 hover:bg-primary-100 rounded-md font-medium text-sm transition-all">
+                                    Ghost/Tertiary
+                                </button>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Assignment Topic</label>
+                                <input type="text" class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm p-2 border" placeholder="e.g. Calculus Limits" value="Derivatives">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+                                <div class="relative">
+                                    <input type="date" class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm p-2 border text-gray-500">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alerts & Cards -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
+                        <h3 class="font-semibold text-gray-900 border-b border-gray-100 pb-2">Feedback & Alerts</h3>
+                        
+                        <div class="space-y-3">
+                            <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-md">
+                                <div class="flex">
+                                    <div class="ml-3">
+                                        <p class="text-sm text-green-700">
+                                            <span class="font-medium">Success:</span> Questions logged successfully!
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-md">
+                                <div class="flex">
+                                    <div class="ml-3">
+                                        <p class="text-sm text-amber-700">
+                                            <span class="font-medium">Alert:</span> 2 students haven't logged today.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-primary-50 border border-primary-100 rounded-lg p-4">
+                                <h4 class="text-sm font-medium text-primary-800 mb-1">Tip of the day</h4>
+                                <p class="text-xs text-primary-600">Review the "Red" students first to maximize your impact.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const themes = {
+            trust: {
+                name: 'Trust & Professional',
+                desc: 'A classic education palette using deep blues to convey reliability and authority. High contrast for readability.',
+                colors: {
+                    50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8'
+                }
+            },
+            focus: {
+                name: 'Focus & Growth',
+                desc: 'Teal and slate tones that promote concentration. Less aggressive than blue, emphasizing growth and progress.',
+                colors: {
+                    50: '#f0fdfa', 100: '#ccfbf1', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e'
+                }
+            },
+            energy: {
+                name: 'Creative & Dynamic',
+                desc: 'Violet and Indigo tones that feel modern and tech-forward. Good for engaging younger students.',
+                colors: {
+                    50: '#f5f3ff', 100: '#ede9fe', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9'
+                }
+            }
+        };
+
+        function setTheme(themeKey) {
+            const theme = themes[themeKey];
+            
+            // Update text content
+            document.getElementById('theme-name').textContent = theme.name;
+            document.getElementById('theme-desc').textContent = theme.desc;
+
+            // Update buttons
+            document.querySelectorAll('header button').forEach(btn => {
+                btn.className = 'px-4 py-1.5 rounded-md text-sm font-medium transition-colors text-gray-600 hover:text-gray-900';
+            });
+            const activeBtn = document.getElementById(`btn-${themeKey}`);
+            activeBtn.className = 'px-4 py-1.5 rounded-md text-sm font-medium transition-colors bg-white shadow-sm';
+            
+            if (themeKey === 'trust') activeBtn.classList.add('text-blue-700');
+            if (themeKey === 'focus') activeBtn.classList.add('text-teal-700');
+            if (themeKey === 'energy') activeBtn.classList.add('text-violet-700');
+
+            // Update CSS variables effectively by finding elements with specific classes
+            // In a real app, we'd use CSS variables. Here we'll swap Tailwind classes roughly via DOM manipulation or just update the style tag for custom colors
+            
+            const styleSheet = document.createElement('style');
+            styleSheet.innerText = `
+                .bg-primary-50 { background-color: ${theme.colors[50]} !important; }
+                .bg-primary-100 { background-color: ${theme.colors[100]} !important; }
+                .bg-primary-500 { background-color: ${theme.colors[500]} !important; }
+                .bg-primary-600 { background-color: ${theme.colors[600]} !important; }
+                .bg-primary-700 { background-color: ${theme.colors[700]} !important; }
+                .text-primary-600 { color: ${theme.colors[600]} !important; }
+                .text-primary-700 { color: ${theme.colors[700]} !important; }
+                .text-primary-800 { color: ${theme.colors[700]} !important; }
+                .border-primary-100 { border-color: ${theme.colors[100]} !important; }
+                .border-primary-500 { border-color: ${theme.colors[500]} !important; }
+                .focus\\:ring-primary-500:focus { --tw-ring-color: ${theme.colors[500]} !important; }
+                .focus\\:border-primary-500:focus { border-color: ${theme.colors[500]} !important; }
+                .ring-primary-500 { --tw-ring-color: ${theme.colors[500]} !important; }
+            `;
+            
+            const oldStyle = document.getElementById('theme-styles');
+            if (oldStyle) oldStyle.remove();
+            styleSheet.id = 'theme-styles';
+            document.head.appendChild(styleSheet);
+        }
+
+        // Init
+        setTheme('trust');
+    </script>
+</body>
+</html>
+
+
+

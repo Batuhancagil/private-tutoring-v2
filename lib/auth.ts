@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import { SignJWT, jwtVerify } from 'jose';
 import { UserRole } from '@prisma/client';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -10,6 +10,11 @@ export interface JWTPayload {
   username: string;
   role: UserRole;
   teacherId?: string | null;
+}
+
+// Convert secret string to Uint8Array for jose
+function getSecretKey(): Uint8Array {
+  return new TextEncoder().encode(JWT_SECRET);
 }
 
 /**
@@ -33,19 +38,41 @@ export async function verifyPassword(
 /**
  * Generate a JWT token for a user
  */
-export function generateToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
-  });
+export async function generateToken(payload: JWTPayload): Promise<string> {
+  const secretKey = getSecretKey();
+  
+  // Calculate expiration time (24 hours from now)
+  const expirationTime = Math.floor(Date.now() / 1000) + (60 * 60 * 24);
+  
+  const jwt = await new SignJWT({
+    userId: payload.userId,
+    username: payload.username,
+    role: payload.role,
+    teacherId: payload.teacherId ?? null,
+  })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime(expirationTime)
+    .setSubject(payload.userId)
+    .sign(secretKey);
+
+  return jwt;
 }
 
 /**
  * Verify and decode a JWT token
  */
-export function verifyToken(token: string): JWTPayload | null {
+export async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
-    return decoded;
+    const secretKey = getSecretKey();
+    const { payload } = await jwtVerify(token, secretKey);
+    
+    return {
+      userId: payload.userId as string,
+      username: payload.username as string,
+      role: payload.role as UserRole,
+      teacherId: (payload.teacherId as string | null) ?? null,
+    };
   } catch (error) {
     return null;
   }

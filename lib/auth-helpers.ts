@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { verifyToken, JWTPayload } from './auth';
+import { UserRole } from '@prisma/client';
 
 /**
  * Get the current authenticated user from the request
@@ -13,7 +14,7 @@ export async function getCurrentUser(): Promise<JWTPayload | null> {
     return null;
   }
 
-  return verifyToken(token);
+  return await verifyToken(token);
 }
 
 /**
@@ -40,5 +41,24 @@ export async function requireRole(role: string): Promise<JWTPayload> {
   }
 
   return user;
+}
+
+/**
+ * Get dashboard URL based on user role
+ * Maps user roles to their respective dashboard routes
+ */
+export function getDashboardUrl(role: UserRole | string): string {
+  switch (role) {
+    case 'SUPERADMIN':
+      return '/admin/dashboard';
+    case 'TEACHER':
+      return '/teacher/dashboard';
+    case 'STUDENT':
+      return '/student/dashboard';
+    case 'PARENT':
+      return '/parent/dashboard';
+    default:
+      return '/dashboard';
+  }
 }
 

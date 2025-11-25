@@ -81,12 +81,34 @@ Story is marked Done in file, but sprint-status.yaml may be out of sync.
 
 </step>
 
-<step n="3" goal="Confirm completion to user">
+<step n="3" goal="Push changes to Git">
+<action>Check git status to see what files have changed</action>
+<action>Stage all changes: git add .</action>
+<action>Create commit with descriptive message: git commit -m "feat: [{story_key}] {story_title} - Story completed"</action>
+<action>Push to remote repository: git push</action>
+
+<check if="git push fails">
+  <output>⚠️ Git push failed. Please check:
+  - Remote repository is configured
+  - You have push permissions
+  - Network connection is available
+  
+  Story is marked as done, but changes need to be pushed manually.
+  </output>
+</check>
+
+<check if="git push succeeds">
+  <output>✅ Changes pushed to Git successfully</output>
+</check>
+</step>
+
+<step n="4" goal="Confirm completion to user">
 
 <output>**Story Approved and Marked Done, {user_name}!**
 
 ✅ Story file updated → Status: done
 ✅ Sprint status updated: review → done
+✅ Changes pushed to Git
 
 **Completed Story:**
 
@@ -103,6 +125,7 @@ Story is marked Done in file, but sprint-status.yaml may be out of sync.
 2. Check epic completion status
    - Run `retrospective` workflow to check if epic is complete
    - Epic retrospective will verify all stories are done
+3. Railway will automatically deploy changes on next push to main/master branch
      </output>
 
 </step>

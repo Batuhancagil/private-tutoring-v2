@@ -33,9 +33,23 @@ function LoginForm() {
         return;
       }
 
-      // Redirect to dashboard or original destination
-      const redirect = searchParams.get('redirect') || '/dashboard';
-      router.push(redirect);
+      // Redirect to role-specific dashboard or original destination
+      const redirect = searchParams.get('redirect');
+      if (redirect) {
+        router.push(redirect);
+      } else if (data.user?.role) {
+        // Map role to dashboard URL
+        const roleDashboardMap: Record<string, string> = {
+          SUPERADMIN: '/admin/dashboard',
+          TEACHER: '/teacher/dashboard',
+          STUDENT: '/student/dashboard',
+          PARENT: '/parent/dashboard',
+        };
+        const dashboardUrl = roleDashboardMap[data.user.role] || '/dashboard';
+        router.push(dashboardUrl);
+      } else {
+        router.push('/dashboard');
+      }
       router.refresh();
     } catch (err) {
       setError('An error occurred. Please try again.');

@@ -21,3 +21,8 @@ fi
 
 echo "✅ Migrations completed successfully"
 
+
+
+
+
+
