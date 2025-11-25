@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { getCurrentUser } from '@/lib/auth-helpers';
+import { getCurrentUser, getDashboardUrl } from '@/lib/auth-helpers';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 
@@ -11,7 +11,7 @@ export default async function TeacherDashboardPage() {
   }
 
   if (user.role !== 'TEACHER') {
-    redirect('/dashboard');
+    redirect(getDashboardUrl(user.role));
   }
 
   return (

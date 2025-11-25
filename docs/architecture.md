@@ -514,20 +514,40 @@ export async function METHOD(request: NextRequest) {
 ### Logging Strategy
 
 **Development:**
-- Use `console.log()` for debugging
-- Use `console.error()` for errors
+- Use `console.log()` for debugging (via `logInfo()` utility)
+- Use `console.error()` for errors (via `logError()` utility)
 - Include context in log messages
+- Verbose logging for debugging
 
 **Production:**
-- Remove debug `console.log()` statements
-- Keep `console.error()` for error tracking
-- Consider adding structured logging (future)
+- Only `console.error()` for errors (via `logApiError()` utility)
+- No debug `console.log()` statements
+- Structured error logging with context
+- Performance monitoring enabled
 
 **Log Format:**
 ```
 [Context] Message
-Example: [Login] User authentication failed for username: john
+Example: [Login, Endpoint: /api/auth/login, Method: POST] Authentication failed for username: john
 ```
+
+**Error Context:**
+- All errors include: endpoint, method, user ID (if authenticated), role (if authenticated), timestamp
+- Sensitive data (passwords, tokens) automatically redacted
+- Stack traces included in development, optional in production
+
+**Error Boundaries:**
+- React error boundary component catches client-side errors
+- Displays user-friendly error messages
+- Logs errors with structured format
+
+**Performance Monitoring:**
+- Response time tracking for all API routes
+- Error rate tracking per endpoint
+- Slow request logging (> 1 second)
+- Railway metrics available for production monitoring
+
+**See `docs/logging-strategy.md` for detailed logging strategy documentation.**
 
 ## Data Architecture
 
@@ -695,17 +715,23 @@ Assignment
 ### Data Protection
 
 **In Transit:**
-- HTTPS/TLS enforced in production
+- HTTPS/TLS 1.3 enforced in production (Railway provides certificates)
+- Application-level HTTPS redirects in middleware
+- Security headers configured (CSP, HSTS, X-Frame-Options, etc.)
 - Secure cookies: `secure: true` in production
 
 **At Rest:**
-- Database encryption (managed by Railway/PostgreSQL)
-- Environment variables for secrets
+- Database encryption: Railway PostgreSQL provides AES-256 encryption automatically
+- SSL/TLS connections to database via DATABASE_URL
+- Environment variables for secrets (never committed to repository)
 
 **Session Management:**
 - httpOnly cookies prevent XSS attacks
 - SameSite: 'lax' prevents CSRF
 - 24-hour expiration balances security and UX
+
+**Security Configuration:**
+- See `docs/security.md` for detailed security configuration and testing procedures
 
 ## Performance Considerations
 

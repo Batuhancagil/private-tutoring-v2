@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyPassword, generateToken } from '@/lib/auth';
+import { logApiError } from '@/lib/error-logger';
+import { trackPerformance } from '@/lib/performance-monitor';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -9,6 +11,11 @@ const loginSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+  const endpoint = request.nextUrl.pathname;
+  const method = request.method;
+  let statusCode = 500;
+
   try {
     const body = await request.json();
     const { username, password } = loginSchema.parse(body);
@@ -19,6 +26,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
+      statusCode = 401;
+      const responseTime = Date.now() - startTime;
+      trackPerformance(endpoint, method, responseTime, statusCode);
+      logApiError('Login', 'Authentication failed - user not found', new Error('User not found'), request);
       return NextResponse.json(
         { error: 'Invalid username or password' },
         { status: 401 }
@@ -29,6 +40,10 @@ export async function POST(request: NextRequest) {
     const isValidPassword = await verifyPassword(password, user.password);
 
     if (!isValidPassword) {
+      statusCode = 401;
+      const responseTime = Date.now() - startTime;
+      trackPerformance(endpoint, method, responseTime, statusCode);
+      logApiError('Login', `Authentication failed for username: ${username}`, new Error('Invalid password'), request);
       return NextResponse.json(
         { error: 'Invalid username or password' },
         { status: 401 }
@@ -66,16 +81,26 @@ export async function POST(request: NextRequest) {
       path: '/',
     });
 
+    statusCode = response.status;
+    const responseTime = Date.now() - startTime;
+    trackPerformance(endpoint, method, responseTime, statusCode);
     return response;
   } catch (error) {
+    const responseTime = Date.now() - startTime;
+    
     if (error instanceof z.ZodError) {
+      statusCode = 400;
+      trackPerformance(endpoint, method, responseTime, statusCode);
+      logApiError('Login', 'Validation error', error, request);
       return NextResponse.json(
         { error: 'Invalid request data', details: error.errors },
         { status: 400 }
       );
     }
 
-    console.error('Login error:', error);
+    statusCode = 500;
+    trackPerformance(endpoint, method, responseTime, statusCode);
+    logApiError('Login', 'Internal server error during login', error, request);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

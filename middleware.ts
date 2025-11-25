@@ -18,6 +18,17 @@ const roleRoutes: Record<string, string[]> = {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  
+  // Enforce HTTPS in production
+  if (process.env.NODE_ENV === 'production') {
+    const protocol = request.headers.get('x-forwarded-proto') || request.nextUrl.protocol;
+    if (protocol === 'http:') {
+      const httpsUrl = new URL(request.url);
+      httpsUrl.protocol = 'https:';
+      return NextResponse.redirect(httpsUrl, 301);
+    }
+  }
+  
   const token = request.cookies.get('auth-token')?.value;
 
   // Allow public routes
@@ -57,7 +68,12 @@ export async function middleware(request: NextRequest) {
       return response;
     }
 
-    // Check role-based access
+    // SUPERADMIN has access to all routes
+    if (payload.role === 'SUPERADMIN') {
+      return NextResponse.next();
+    }
+
+    // Check role-based access for other roles
     for (const [role, routes] of Object.entries(roleRoutes)) {
       if (
         routes.some((route) => pathname.startsWith(route)) &&

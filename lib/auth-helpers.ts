@@ -62,3 +62,36 @@ export function getDashboardUrl(role: UserRole | string): string {
   }
 }
 
+/**
+ * Check if user can access tenant data
+ * SUPERADMIN can access all tenants, others can only access their own tenant
+ */
+export function canAccessTenant(
+  user: JWTPayload | null,
+  targetTeacherId: string | null
+): boolean {
+  if (!user) {
+    return false;
+  }
+
+  // SUPERADMIN can access all tenants
+  if (user.role === 'SUPERADMIN') {
+    return true;
+  }
+
+  // Users can access their own tenant data
+  return user.teacherId === targetTeacherId;
+}
+
+/**
+ * Require tenant access - throws error if user cannot access tenant
+ */
+export function requireTenantAccess(
+  user: JWTPayload,
+  targetTeacherId: string | null
+): void {
+  if (!canAccessTenant(user, targetTeacherId)) {
+    throw new Error('Access denied: insufficient tenant permissions');
+  }
+}
+

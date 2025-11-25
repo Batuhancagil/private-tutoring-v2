@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken, JWTPayload } from './auth';
 import { UserRole } from '@prisma/client';
+import { logApiError } from './error-logger';
+import { trackPerformance } from './performance-monitor';
 
 /**
  * Get authenticated user from request
@@ -76,22 +78,69 @@ export function hasAnyRole(user: JWTPayload | null, roles: UserRole[]): boolean 
 }
 
 /**
+ * Check if user can access tenant data
+ * SUPERADMIN can access all tenants, others can only access their own tenant
+ */
+export function canAccessTenant(
+  user: JWTPayload | null,
+  targetTeacherId: string | null
+): boolean {
+  if (!user) {
+    return false;
+  }
+
+  // SUPERADMIN can access all tenants
+  if (user.role === 'SUPERADMIN') {
+    return true;
+  }
+
+  // Users can access their own tenant data
+  return user.teacherId === targetTeacherId;
+}
+
+/**
+ * Require tenant access - throws error if user cannot access tenant
+ */
+export function requireTenantAccess(
+  user: JWTPayload,
+  targetTeacherId: string | null
+): void {
+  if (!canAccessTenant(user, targetTeacherId)) {
+    throw new Error('Access denied: insufficient tenant permissions');
+  }
+}
+
+/**
  * API route wrapper that handles authentication
  */
 export function withAuth(
   handler: (request: NextRequest, user: JWTPayload) => Promise<NextResponse>
 ) {
   return async (request: NextRequest) => {
+    const startTime = Date.now();
+    const endpoint = request.nextUrl.pathname;
+    const method = request.method;
+    let statusCode = 500;
+
     try {
       const user = await requireAuth(request);
-      return await handler(request, user);
+      const response = await handler(request, user);
+      statusCode = response.status;
+      const responseTime = Date.now() - startTime;
+      trackPerformance(endpoint, method, responseTime, statusCode);
+      return response;
     } catch (error) {
+      const responseTime = Date.now() - startTime;
+      trackPerformance(endpoint, method, responseTime, statusCode);
+      
       if (error instanceof Error && error.message === 'Authentication required') {
+        logApiError('Auth', 'Authentication required', error, request);
         return NextResponse.json(
           { error: 'Authentication required' },
           { status: 401 }
         );
       }
+      logApiError('Auth', 'Unexpected error in withAuth', error, request);
       throw error;
     }
   };
@@ -111,18 +160,21 @@ export function withRole(
     } catch (error) {
       if (error instanceof Error) {
         if (error.message === 'Authentication required') {
+          logApiError('Auth', 'Authentication required', error, request);
           return NextResponse.json(
             { error: 'Authentication required' },
             { status: 401 }
           );
         }
         if (error.message.includes('Access denied')) {
+          logApiError('Auth', `Access denied - ${role} role required`, error, request);
           return NextResponse.json(
             { error: error.message },
             { status: 403 }
           );
         }
       }
+      logApiError('Auth', 'Unexpected error in withRole', error, request);
       throw error;
     }
   };
@@ -142,18 +194,21 @@ export function withAnyRole(
     } catch (error) {
       if (error instanceof Error) {
         if (error.message === 'Authentication required') {
+          logApiError('Auth', 'Authentication required', error, request);
           return NextResponse.json(
             { error: 'Authentication required' },
             { status: 401 }
           );
         }
         if (error.message.includes('Access denied')) {
+          logApiError('Auth', `Access denied - one of [${roles.join(', ')}] roles required`, error, request);
           return NextResponse.json(
             { error: error.message },
             { status: 403 }
           );
         }
       }
+      logApiError('Auth', 'Unexpected error in withAnyRole', error, request);
       throw error;
     }
   };

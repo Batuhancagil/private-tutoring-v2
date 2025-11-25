@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/api-helpers';
 import { prisma } from '@/lib/prisma';
+import { logApiError } from '@/lib/error-logger';
 
 export const GET = withAuth(async (request: NextRequest, user) => {
   try {
@@ -17,6 +18,7 @@ export const GET = withAuth(async (request: NextRequest, user) => {
     });
 
     if (!userData) {
+      logApiError('Auth', `User not found: ${user.userId}`, new Error('User not found'), request, user);
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
@@ -25,7 +27,7 @@ export const GET = withAuth(async (request: NextRequest, user) => {
 
     return NextResponse.json({ user: userData }, { status: 200 });
   } catch (error) {
-    console.error('Auth check error:', error);
+    logApiError('Auth', 'Error fetching user data', error, request, user);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

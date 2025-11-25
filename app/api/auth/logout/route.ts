@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logApiError } from '@/lib/error-logger';
 
 export async function POST() {
   const response = NextResponse.json({ success: true }, { status: 200 });
