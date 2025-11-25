@@ -333,3 +333,5 @@ Use semantic HTML and ARIA labels:
 - [Next.js Font Optimization](https://nextjs.org/docs/app/building-your-application/optimizing/fonts)
 - [WCAG Accessibility Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
 
+
+
