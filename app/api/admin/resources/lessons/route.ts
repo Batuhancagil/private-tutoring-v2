@@ -6,14 +6,13 @@ import { logApiError } from '@/lib/error-logger';
 import { trackPerformance } from '@/lib/performance-monitor';
 import { z } from 'zod';
 
-const createLessonSchema = z.object({
+const createGlobalLessonSchema = z.object({
   name: z.string().min(1, 'Lesson name is required'),
 });
 
 /**
- * GET /api/teacher/lessons
- * List all lessons for current teacher (includes global lessons)
- * Query params: ?scope=all|global|custom (default: all)
+ * GET /api/admin/resources/lessons
+ * List all global lessons (teacherId=null) with their hierarchy
  */
 async function GETHandler(request: NextRequest, user: any) {
   const startTime = Date.now();
@@ -22,38 +21,29 @@ async function GETHandler(request: NextRequest, user: any) {
   let statusCode = 500;
 
   try {
-    // Get scope filter from query params (default: 'all')
-    const scope = request.nextUrl.searchParams.get('scope') || 'all';
-
-    // Build where clause based on scope
-    let whereClause: { teacherId?: string | null } | { OR: Array<{ teacherId: string | null }> } =
-      {};
-
-    if (scope === 'global') {
-      // Only global lessons (teacherId=null)
-      whereClause = { teacherId: null };
-    } else if (scope === 'custom') {
-      // Only custom lessons (teacherId=current teacher's ID)
-      whereClause = { teacherId: user.userId };
-    } else {
-      // All lessons: both global (teacherId=null) and custom (teacherId=teacher's ID)
-      whereClause = {
-        OR: [
-          { teacherId: null },
-          { teacherId: user.userId },
-        ],
-      };
-    }
-
-    // Fetch lessons based on scope
+    // Fetch all global lessons (teacherId=null) with their topics and resources
     const lessons = await prisma.lesson.findMany({
-      where: whereClause,
-      select: {
-        id: true,
-        name: true,
-        teacherId: true,
-        createdAt: true,
-        updatedAt: true,
+      where: {
+        teacherId: null, // Only global lessons
+      },
+      include: {
+        topics: {
+          include: {
+            resources: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                questionCount: true,
+                createdAt: true,
+                updatedAt: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: 'asc',
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -74,18 +64,23 @@ async function GETHandler(request: NextRequest, user: any) {
   } catch (error) {
     const responseTime = Date.now() - startTime;
     trackPerformance(endpoint, method, responseTime, statusCode);
-    logApiError('[LessonList]', 'Failed to fetch lessons', error, request);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logApiError(
+      '[GlobalLessonList]',
+      `Failed to fetch global lessons: ${errorMessage}`,
+      error,
+      request
+    );
     return NextResponse.json(
-      { error: 'Failed to fetch lessons' },
+      { error: `Failed to fetch global lessons: ${errorMessage}` },
       { status: 500 }
     );
   }
 }
 
 /**
- * POST /api/teacher/lessons
- * Create a new lesson (Teacher only)
- * Teachers can only create custom lessons (teacherId=their ID), not global lessons
+ * POST /api/admin/resources/lessons
+ * Create a new global lesson (teacherId=null) - Superadmin only
  */
 async function POSTHandler(request: NextRequest, user: any) {
   const startTime = Date.now();
@@ -95,14 +90,13 @@ async function POSTHandler(request: NextRequest, user: any) {
 
   try {
     const body = await request.json();
-    const { name } = createLessonSchema.parse(body);
+    const { name } = createGlobalLessonSchema.parse(body);
 
-    // Ensure Teachers cannot create global lessons (teacherId must be their ID, not null)
-    // This is enforced by always setting teacherId to user.userId
+    // Create global lesson with teacherId=null
     const lesson = await prisma.lesson.create({
       data: {
         name,
-        teacherId: user.userId, // Tenant isolation: set to current teacher's ID (not null)
+        teacherId: null, // Global lesson - accessible to all teachers
       },
       select: {
         id: true,
@@ -131,7 +125,7 @@ async function POSTHandler(request: NextRequest, user: any) {
     if (error instanceof z.ZodError) {
       statusCode = 400;
       trackPerformance(endpoint, method, responseTime, statusCode);
-      logApiError('[LessonCreation]', 'Validation error', error, request);
+      logApiError('[GlobalLessonCreation]', 'Validation error', error, request);
       return NextResponse.json(
         { error: 'Invalid request data', details: error.errors },
         { status: 400 }
@@ -140,15 +134,22 @@ async function POSTHandler(request: NextRequest, user: any) {
 
     statusCode = 500;
     trackPerformance(endpoint, method, responseTime, statusCode);
-    logApiError('[LessonCreation]', 'Failed to create lesson', error, request);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logApiError(
+      '[GlobalLessonCreation]',
+      `Failed to create global lesson: ${errorMessage}`,
+      error,
+      request
+    );
     return NextResponse.json(
-      { error: 'Failed to create lesson' },
+      { error: `Failed to create global lesson: ${errorMessage}` },
       { status: 500 }
     );
   }
 }
 
-// Export handlers with role-based access control
-export const GET = withRole(UserRole.TEACHER, GETHandler);
-export const POST = withRole(UserRole.TEACHER, POSTHandler);
+// Export handlers with role-based access control (Superadmin only)
+export const GET = withRole(UserRole.SUPERADMIN, GETHandler);
+export const POST = withRole(UserRole.SUPERADMIN, POSTHandler);
+
 

@@ -15,6 +15,7 @@ const createResourceSchema = z.object({
 /**
  * GET /api/teacher/resources
  * List all resources for current teacher (via topic's lesson ownership)
+ * Query params: ?scope=all|global|custom (default: all)
  */
 async function GETHandler(request: NextRequest, user: any) {
   const startTime = Date.now();
@@ -23,16 +24,34 @@ async function GETHandler(request: NextRequest, user: any) {
   let statusCode = 500;
 
   try {
+    // Get scope filter from query params (default: 'all')
+    const scope = request.nextUrl.searchParams.get('scope') || 'all';
+
+    // Build lesson filter based on scope
+    let lessonFilter: { teacherId?: string | null } | { OR: Array<{ teacherId: string | null }> } =
+      {};
+
+    if (scope === 'global') {
+      // Only resources from global lessons (teacherId=null)
+      lessonFilter = { teacherId: null };
+    } else if (scope === 'custom') {
+      // Only resources from custom lessons (teacherId=teacher's ID)
+      lessonFilter = { teacherId: user.userId };
+    } else {
+      // All resources: from both global (teacherId=null) and custom (teacherId=teacher's ID) lessons
+      lessonFilter = {
+        OR: [
+          { teacherId: null },
+          { teacherId: user.userId },
+        ],
+      };
+    }
+
     // Fetch all resources where topic's lesson belongs to current teacher (or is global)
     const resources = await prisma.resource.findMany({
       where: {
         topic: {
-          lesson: {
-            OR: [
-              { teacherId: user.userId }, // Tenant isolation: current teacher's lessons
-              { teacherId: null }, // Global lessons accessible to all teachers
-            ],
-          },
+          lesson: lessonFilter,
         },
       },
       select: {
@@ -77,9 +96,10 @@ async function GETHandler(request: NextRequest, user: any) {
   } catch (error) {
     const responseTime = Date.now() - startTime;
     trackPerformance(endpoint, method, responseTime, statusCode);
-    logApiError('[ResourceList]', 'Failed to fetch resources', error, request);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logApiError('[ResourceList]', `Failed to fetch resources: ${errorMessage}`, error, request);
     return NextResponse.json(
-      { error: 'Failed to fetch resources' },
+      { error: `Failed to fetch resources: ${errorMessage}` },
       { status: 500 }
     );
   }
@@ -187,9 +207,10 @@ async function POSTHandler(request: NextRequest, user: any) {
 
     statusCode = 500;
     trackPerformance(endpoint, method, responseTime, statusCode);
-    logApiError('[ResourceCreation]', 'Failed to create resource', error, request);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logApiError('[ResourceCreation]', `Failed to create resource: ${errorMessage}`, error, request);
     return NextResponse.json(
-      { error: 'Failed to create resource' },
+      { error: `Failed to create resource: ${errorMessage}` },
       { status: 500 }
     );
   }

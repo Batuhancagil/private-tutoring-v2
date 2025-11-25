@@ -15,6 +15,7 @@ interface Topic {
 interface TopicFormProps {
   topic?: Topic | null;
   lessonId: string;
+  lessonIsGlobal?: boolean; // Indicates if the parent lesson is global
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -22,6 +23,7 @@ interface TopicFormProps {
 export function TopicForm({
   topic,
   lessonId,
+  lessonIsGlobal = false,
   onSuccess,
   onCancel,
 }: TopicFormProps) {
@@ -87,6 +89,15 @@ export function TopicForm({
           {error && (
             <div className="rounded-md bg-red-50 p-3 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-200">
               {error}
+            </div>
+          )}
+
+          {lessonIsGlobal && !isEditMode && (
+            <div className="rounded-md bg-yellow-50 p-3 text-sm text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-800">
+              <p className="font-medium">⚠️ Creating topic under global lesson</p>
+              <p className="mt-1">
+                This topic will be created under a global (pre-built) lesson. All teachers will be able to see and use this topic.
+              </p>
             </div>
           )}
 

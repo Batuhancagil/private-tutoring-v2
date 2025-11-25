@@ -2,18 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { ResourceHierarchy } from './ResourceHierarchy';
-import { LessonForm } from './LessonForm';
-import { TopicForm } from './TopicForm';
-import { ResourceForm } from './ResourceForm';
+import { Card, CardContent } from '@/components/ui/Card';
+import { ResourceHierarchy } from '@/components/teacher/ResourceHierarchy';
+import { LessonForm } from '@/components/teacher/LessonForm';
+import { TopicForm } from '@/components/teacher/TopicForm';
+import { ResourceForm } from '@/components/teacher/ResourceForm';
 import { ConfirmDialog } from '@/components/ui/Dialog';
 
 interface Lesson {
   id: string;
   name: string;
   teacherId: string | null;
-  isGlobal?: boolean; // Added for global resource indicator
+  isGlobal?: boolean;
   createdAt: string;
   updatedAt: string;
   topics?: Topic[];
@@ -38,11 +38,10 @@ interface Resource {
   updatedAt: string;
 }
 
-export function ResourcesPageClient() {
+export function AdminResourcesPageClient() {
   const [hierarchy, setHierarchy] = useState<{ lessons: Lesson[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [scope, setScope] = useState<'all' | 'global' | 'custom'>('all');
   const [showLessonForm, setShowLessonForm] = useState(false);
   const [showTopicForm, setShowTopicForm] = useState(false);
   const [showResourceForm, setShowResourceForm] = useState(false);
@@ -59,26 +58,34 @@ export function ResourcesPageClient() {
 
   useEffect(() => {
     fetchHierarchy();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scope]);
+  }, []);
 
   const fetchHierarchy = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const url = `/api/teacher/resources/hierarchy?scope=${scope}`;
-      const response = await fetch(url);
+      const response = await fetch('/api/admin/resources/lessons');
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch resources');
+        throw new Error(data.error || 'Failed to fetch global resources');
       }
 
-      setHierarchy(data.data);
+      // Transform to match hierarchy structure expected by ResourceHierarchy
+      interface LessonResponse {
+        id: string;
+        name: string;
+        teacherId: string | null;
+        createdAt: string;
+        updatedAt: string;
+        topics?: Topic[];
+      }
+      const lessons = Array.isArray(data.data) ? (data.data as LessonResponse[]) : [];
+      setHierarchy({ lessons: lessons.map((lesson) => ({ ...lesson, isGlobal: true })) });
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to load resources'
+        err instanceof Error ? err.message : 'Failed to load global resources'
       );
     } finally {
       setLoading(false);
@@ -119,32 +126,14 @@ export function ResourcesPageClient() {
     setShowResourceForm(true);
   };
 
-  // Helper to check if a lesson is global
-  const isLessonGlobal = (lessonId: string): boolean => {
-    if (!hierarchy?.lessons) return false;
-    const lesson = hierarchy.lessons.find((l) => l.id === lessonId);
-    return lesson ? (lesson.isGlobal ?? lesson.teacherId === null) : false;
-  };
-
-  // Helper to check if a topic's lesson is global
-  const isTopicGlobal = (topicId: string): boolean => {
-    if (!hierarchy?.lessons) return false;
-    for (const lesson of hierarchy.lessons) {
-      const topic = lesson.topics?.find((t) => t.id === topicId);
-      if (topic) {
-        return lesson.isGlobal ?? lesson.teacherId === null;
-      }
-    }
-    return false;
-  };
-
   const handleDelete = async () => {
     if (!deletingItem) return;
 
     try {
       let url = '';
       if (deletingItem.type === 'lesson') {
-        url = `/api/teacher/lessons/${deletingItem.id}`;
+        // For global lessons, use admin endpoint
+        url = `/api/admin/resources/lessons/${deletingItem.id}`;
       } else if (deletingItem.type === 'topic') {
         url = `/api/teacher/topics/${deletingItem.id}`;
       } else {
@@ -194,12 +183,46 @@ export function ResourcesPageClient() {
     setSelectedTopicId(null);
   };
 
+  // Custom lesson form handler for global lessons
+  const handleGlobalLessonSubmit = async (name: string) => {
+    try {
+      const url = editingLesson
+        ? `/api/admin/resources/lessons/${editingLesson.id}`
+        : '/api/admin/resources/lessons';
+      const method = editingLesson ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to save lesson');
+      }
+
+      handleFormSuccess();
+    } catch (err) {
+      alert(
+        err instanceof Error
+          ? err.message
+          : 'Failed to save lesson. Please try again.'
+      );
+    }
+  };
+
+  // Override lesson form to use admin endpoint
+  const handleLessonFormSuccess = async (name: string) => {
+    await handleGlobalLessonSubmit(name);
+  };
+
   if (loading) {
     return (
       <Card>
         <CardContent>
           <div className="py-8 text-center text-gray-600 dark:text-gray-400">
-            Loading resources...
+            Loading global resources...
           </div>
         </CardContent>
       </Card>
@@ -222,16 +245,50 @@ export function ResourcesPageClient() {
   return (
     <>
       {showLessonForm ? (
-        <LessonForm
-          lesson={editingLesson}
-          onSuccess={handleFormSuccess}
-          onCancel={handleFormCancel}
-        />
+        <Card>
+          <CardContent>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const name = formData.get('name') as string;
+                await handleGlobalLessonSubmit(name);
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Lesson Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  defaultValue={editingLesson?.name || ''}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
+                  placeholder="Enter lesson name"
+                />
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  {editingLesson
+                    ? 'This is a global lesson accessible to all teachers'
+                    : 'This will be a global lesson accessible to all teachers'}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button type="submit">
+                  {editingLesson ? 'Update Global Lesson' : 'Create Global Lesson'}
+                </Button>
+                <Button type="button" variant="outline" onClick={handleFormCancel}>
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       ) : showTopicForm ? (
         <TopicForm
           topic={editingTopic}
           lessonId={selectedLessonId!}
-          lessonIsGlobal={selectedLessonId ? isLessonGlobal(selectedLessonId) : false}
           onSuccess={handleFormSuccess}
           onCancel={handleFormCancel}
         />
@@ -239,50 +296,17 @@ export function ResourcesPageClient() {
         <ResourceForm
           resource={editingResource}
           topicId={selectedTopicId!}
-          topicIsGlobal={selectedTopicId ? isTopicGlobal(selectedTopicId) : false}
           onSuccess={handleFormSuccess}
           onCancel={handleFormCancel}
         />
       ) : (
         <>
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex items-center gap-4">
-              <div className="flex gap-2">
-                <Button
-                  variant={scope === 'all' ? 'primary' : 'outline'}
-                  size="sm"
-                  onClick={() => setScope('all')}
-                >
-                  All
-                </Button>
-                <Button
-                  variant={scope === 'global' ? 'primary' : 'outline'}
-                  size="sm"
-                  onClick={() => setScope('global')}
-                >
-                  Global
-                </Button>
-                <Button
-                  variant={scope === 'custom' ? 'primary' : 'outline'}
-                  size="sm"
-                  onClick={() => setScope('custom')}
-                >
-                  Custom
-                </Button>
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                <span className="inline-flex items-center gap-1">
-                  <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded">
-                    Global
-                  </span>
-                  <span>= Pre-built resources</span>
-                </span>
-              </div>
-            </div>
-            <Button onClick={handleCreateLesson}>Create Lesson</Button>
+          <div className="flex justify-end mb-4">
+            <Button onClick={handleCreateLesson}>Create Global Lesson</Button>
           </div>
           <ResourceHierarchy
             hierarchy={hierarchy}
+            isAdmin={true}
             onEditLesson={handleEditLesson}
             onDeleteLesson={(lesson) =>
               setDeletingItem({
@@ -320,11 +344,11 @@ export function ResourcesPageClient() {
         title={`Delete ${deletingItem?.type}`}
         message={`Are you sure you want to delete "${deletingItem?.name}"? ${
           deletingItem?.type === 'lesson'
-            ? 'This will also delete all topics and resources in this lesson.'
+            ? 'This will permanently delete this global lesson and all its topics and resources. All teachers will lose access to this content immediately. This action cannot be undone.'
             : deletingItem?.type === 'topic'
-            ? 'This will also delete all resources in this topic.'
-            : ''
-        } This action cannot be undone.`}
+            ? 'This will permanently delete this topic and all its resources from the global library. All teachers will lose access to this content immediately. This action cannot be undone.'
+            : 'This will permanently delete this resource from the global library. All teachers will lose access to this content immediately. This action cannot be undone.'
+        }`}
         confirmText="Delete"
         cancelText="Cancel"
         variant="danger"

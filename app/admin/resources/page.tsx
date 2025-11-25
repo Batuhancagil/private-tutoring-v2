@@ -1,16 +1,16 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser, getDashboardUrl } from '@/lib/auth-helpers';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { StudentsPageClient } from '@/components/teacher/StudentsPageClient';
+import { AdminResourcesPageClient } from '@/components/admin/AdminResourcesPageClient';
 
-export default async function StudentsPage() {
+export default async function AdminResourcesPage() {
   const user = await getCurrentUser();
 
   if (!user) {
     redirect('/login');
   }
 
-  if (user.role !== 'TEACHER') {
+  if (user.role !== 'SUPERADMIN') {
     redirect(getDashboardUrl(user.role));
   }
 
@@ -19,14 +19,14 @@ export default async function StudentsPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Student Management
+            Pre-Built Resource Library
           </h1>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Create and manage student accounts
+            Create and manage global resources accessible to all teachers
           </p>
         </div>
 
-        <StudentsPageClient />
+        <AdminResourcesPageClient />
       </div>
     </DashboardLayout>
   );

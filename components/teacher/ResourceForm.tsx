@@ -17,6 +17,7 @@ interface Resource {
 interface ResourceFormProps {
   resource?: Resource | null;
   topicId: string;
+  topicIsGlobal?: boolean; // Indicates if the parent topic's lesson is global
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -24,6 +25,7 @@ interface ResourceFormProps {
 export function ResourceForm({
   resource,
   topicId,
+  topicIsGlobal = false,
   onSuccess,
   onCancel,
 }: ResourceFormProps) {
@@ -115,6 +117,15 @@ export function ResourceForm({
           {error && (
             <div className="rounded-md bg-red-50 p-3 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-200">
               {error}
+            </div>
+          )}
+
+          {topicIsGlobal && !isEditMode && (
+            <div className="rounded-md bg-yellow-50 p-3 text-sm text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-800">
+              <p className="font-medium">⚠️ Creating resource under global topic</p>
+              <p className="mt-1">
+                This resource will be created under a global (pre-built) topic. All teachers will be able to see and use this resource.
+              </p>
             </div>
           )}
 

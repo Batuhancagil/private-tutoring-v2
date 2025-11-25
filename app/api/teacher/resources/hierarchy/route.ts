@@ -8,6 +8,8 @@ import { trackPerformance } from '@/lib/performance-monitor';
 /**
  * GET /api/teacher/resources/hierarchy
  * Get hierarchical structure: lessons with topics and resources
+ * Query params: ?scope=all|global|custom (default: all)
+ * Returns both global (teacherId=null) and custom (teacherId=teacher's ID) lessons
  */
 async function GETHandler(request: NextRequest, user: any) {
   const startTime = Date.now();
@@ -16,11 +18,32 @@ async function GETHandler(request: NextRequest, user: any) {
   let statusCode = 500;
 
   try {
-    // Fetch all lessons belonging to current teacher (tenant isolation)
+    // Get scope filter from query params (default: 'all')
+    const scope = request.nextUrl.searchParams.get('scope') || 'all';
+
+    // Build where clause based on scope
+    let whereClause: { teacherId?: string | null } | { OR: Array<{ teacherId: string | null }> } =
+      {};
+
+    if (scope === 'global') {
+      // Only global lessons (teacherId=null)
+      whereClause = { teacherId: null };
+    } else if (scope === 'custom') {
+      // Only custom lessons (teacherId=teacher's ID)
+      whereClause = { teacherId: user.userId };
+    } else {
+      // All lessons: both global (teacherId=null) and custom (teacherId=teacher's ID)
+      whereClause = {
+        OR: [
+          { teacherId: null },
+          { teacherId: user.userId },
+        ],
+      };
+    }
+
+    // Fetch all lessons (global and custom) with their topics and resources
     const lessons = await prisma.lesson.findMany({
-      where: {
-        teacherId: user.userId, // Tenant isolation: only current teacher's lessons
-      },
+      where: whereClause,
       include: {
         topics: {
           include: {
@@ -45,11 +68,12 @@ async function GETHandler(request: NextRequest, user: any) {
       },
     });
 
-    // Transform to hierarchical structure
+    // Transform to hierarchical structure with isGlobal indicator
     const hierarchy = lessons.map((lesson) => ({
       id: lesson.id,
       name: lesson.name,
       teacherId: lesson.teacherId,
+      isGlobal: lesson.teacherId === null, // Mark global resources
       createdAt: lesson.createdAt,
       updatedAt: lesson.updatedAt,
       topics: lesson.topics.map((topic) => ({
@@ -76,14 +100,15 @@ async function GETHandler(request: NextRequest, user: any) {
   } catch (error) {
     const responseTime = Date.now() - startTime;
     trackPerformance(endpoint, method, responseTime, statusCode);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     logApiError(
       '[ResourceHierarchy]',
-      'Failed to fetch resource hierarchy',
+      `Failed to fetch resource hierarchy: ${errorMessage}`,
       error,
       request
     );
     return NextResponse.json(
-      { error: 'Failed to fetch resource hierarchy' },
+      { error: `Failed to fetch resource hierarchy: ${errorMessage}` },
       { status: 500 }
     );
   }

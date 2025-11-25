@@ -8,6 +8,7 @@ interface Lesson {
   id: string;
   name: string;
   teacherId: string | null;
+  isGlobal?: boolean; // Added for global resource indicator
   createdAt: string;
   updatedAt: string;
   topics?: Topic[];
@@ -42,6 +43,7 @@ interface ResourceHierarchyProps {
   onCreateResource: (topicId: string) => void;
   onEditResource: (resource: Resource) => void;
   onDeleteResource: (resource: Resource) => void;
+  isAdmin?: boolean; // If true, allows editing/deleting global lessons
 }
 
 export function ResourceHierarchy({
@@ -54,6 +56,7 @@ export function ResourceHierarchy({
   onCreateResource,
   onEditResource,
   onDeleteResource,
+  isAdmin = false,
 }: ResourceHierarchyProps) {
   const [expandedLessons, setExpandedLessons] = useState<Set<string>>(new Set());
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
@@ -114,6 +117,16 @@ export function ResourceHierarchy({
                   <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
                     {lesson.name}
                   </h3>
+                  {(lesson.isGlobal ?? lesson.teacherId === null) && (
+                    <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded border border-blue-200 dark:border-blue-800">
+                      🌐 Global
+                    </span>
+                  )}
+                  {!(lesson.isGlobal ?? lesson.teacherId === null) && (
+                    <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 rounded border border-gray-200 dark:border-gray-700">
+                      Custom
+                    </span>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   <Button
@@ -123,20 +136,25 @@ export function ResourceHierarchy({
                   >
                     Add Topic
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onEditLesson(lesson)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={() => onDeleteLesson(lesson)}
-                  >
-                    Delete
-                  </Button>
+                  {/* Admin can edit/delete global lessons, teachers can only edit/delete custom lessons */}
+                  {(isAdmin || !(lesson.isGlobal ?? lesson.teacherId === null)) && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onEditLesson(lesson)}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => onDeleteLesson(lesson)}
+                      >
+                        Delete
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
 
