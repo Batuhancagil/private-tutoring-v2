@@ -1,7 +1,12 @@
 #!/bin/bash
 
 # Railway Post-Build Script
-# This runs migrations after build completes
+# NOTE: This script is currently NOT used in railway.json build command.
+# Migrations now run at startup via package.json "start" command instead.
+# This is because database connections may not be available during build phase.
+# 
+# Migrations run via: npm start -> npx prisma migrate deploy && next start
+# This ensures migrations run when the container starts, not during build.
 
 echo "🔄 Running database migrations..."
 
