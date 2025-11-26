@@ -3,6 +3,7 @@ import { verifyToken, JWTPayload } from './auth';
 import { UserRole } from '@prisma/client';
 import { logApiError } from './error-logger';
 import { trackPerformance } from './performance-monitor';
+import { checkSubscriptionAccess } from './auth-helpers';
 
 /**
  * Get authenticated user from request
@@ -148,6 +149,7 @@ export function withAuth(
 
 /**
  * API route wrapper that handles role-based access control
+ * Also checks subscription status for teachers
  */
 export function withRole(
   role: UserRole,
@@ -156,6 +158,23 @@ export function withRole(
   return async (request: NextRequest) => {
     try {
       const user = await requireRole(request, role);
+      
+      // Check subscription status for teachers
+      if (role === UserRole.TEACHER) {
+        const hasActiveSubscription = await checkSubscriptionAccess(user);
+        if (!hasActiveSubscription) {
+          logApiError('Auth', 'Subscription expired', new Error('Subscription expired'), request);
+          return NextResponse.json(
+            { 
+              error: 'Subscription expired',
+              code: 'SUBSCRIPTION_EXPIRED',
+              redirect: '/subscription-expired'
+            },
+            { status: 403 }
+          );
+        }
+      }
+      
       return await handler(request, user);
     } catch (error) {
       if (error instanceof Error) {

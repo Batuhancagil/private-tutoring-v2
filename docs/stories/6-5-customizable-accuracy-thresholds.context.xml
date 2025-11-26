@@ -1,0 +1,240 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>6</epicId>
+    <storyId>6-5</storyId>
+    <title>Customizable Accuracy Thresholds</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/6-5-customizable-accuracy-thresholds.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Teacher</asA>
+    <iWant>to customize accuracy thresholds for alerts</iWant>
+    <soThat>I can set my own standards</soThat>
+    <tasks>
+      <task>Add UserPreference model to prisma/schema.prisma</task>
+      <task>Create preferences service (lib/preferences-service.ts)</task>
+      <task>Create threshold configuration API endpoint (app/api/teacher/preferences/threshold/route.ts)</task>
+      <task>Create ThresholdConfig component (components/teacher/ThresholdConfig.tsx)</task>
+      <task>Update student-status-calculator to accept threshold parameter</task>
+      <task>Update student list, detail, and progress table APIs to use custom threshold</task>
+      <task>Add threshold configuration to dashboard</task>
+      <task>Implement real-time threshold updates (&lt; 500ms)</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>I am viewing my dashboard</given>
+      <when>I change the accuracy threshold</when>
+      <then>alerts update accordingly</then>
+      <and>color coding updates</and>
+      <and>my preference is saved</and>
+      <and>default is 70% if not set</and>
+    </criterion>
+    <criterion id="AC2">
+      <given>I set a custom threshold</given>
+      <when>I view the student list</when>
+      <then>color coding uses my custom threshold</then>
+      <and>status calculations use my custom threshold</and>
+    </criterion>
+    <criterion id="AC3">
+      <given>I set a custom threshold</given>
+      <when>I view student detail</when>
+      <then>progress table uses my custom threshold</then>
+      <and>alerts use my custom threshold</and>
+    </criterion>
+    <criterion id="AC4">
+      <given>I change the threshold</given>
+      <when>I save the change</when>
+      <then>the change applies immediately</then>
+      <and>all views update in real-time (&lt; 500ms)</and>
+      <and>my preference persists across sessions</and>
+    </criterion>
+    <criterion id="AC5">
+      <given>I want to reset to default</given>
+      <when>I reset the threshold</when>
+      <then>threshold returns to 70%</then>
+      <and>all views update accordingly</and>
+    </criterion>
+    <criterion id="AC6">
+      <given>I set an invalid threshold (e.g., &lt; 0% or &gt; 100%)</given>
+      <when>I try to save</when>
+      <then>I see a validation error</then>
+      <and>the threshold is not saved</and>
+      <and>I see a helpful error message</and>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 6: Teacher Dashboard &amp; Visibility - Story 6.5</section>
+        <snippet>As a Teacher, I want to customize accuracy thresholds for alerts, So that I can set my own standards. Threshold configuration UI, preference storage, real-time threshold application, default value handling.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR-007: Teacher Dashboard</section>
+        <snippet>FR-007.5: The system shall allow teachers to customize accuracy thresholds. Threshold changes apply immediately and persist across sessions.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/6-4-progress-table-lessons-topics.md</path>
+        <title>Story 6.4: Progress Table</title>
+        <section>Learnings</section>
+        <snippet>Progress table component established. Status calculation integration established. Progress table API endpoint pattern established.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/5-6-low-accuracy-alerts.md</path>
+        <title>Story 5.6: Low Accuracy Alerts</title>
+        <section>Learnings</section>
+        <snippet>Alert service uses threshold. Default 70% established - maintain as fallback.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>User</symbol>
+        <lines>20-42</lines>
+        <reason>User model to reference. Add UserPreference model with relation to User for storing threshold preference.</reason>
+      </artifact>
+      <artifact>
+        <path>lib/student-status-calculator.ts</path>
+        <kind>utility</kind>
+        <symbol>calculateStudentStatus</symbol>
+        <lines>1-50</lines>
+        <reason>Status calculation helper to update. Modify to accept threshold parameter instead of hardcoded default.</reason>
+      </artifact>
+      <artifact>
+        <path>lib/alert-service.ts</path>
+        <kind>service</kind>
+        <symbol>checkAndGenerateAlert</symbol>
+        <lines>1-100</lines>
+        <reason>Alert service to update. Update to use custom threshold from preferences instead of hardcoded default.</reason>
+      </artifact>
+      <artifact>
+        <path>components/teacher/TeacherDashboardClient.tsx</path>
+        <kind>component</kind>
+        <symbol>TeacherDashboardClient</symbol>
+        <lines>1-100</lines>
+        <reason>Dashboard component to add threshold configuration. Add ThresholdConfig component to dashboard settings section.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="@prisma/client" version="^5.19.0" />
+        <package name="prisma" version="^5.19.0" />
+        <package name="zod" version="^3.23.8" />
+        <package name="typescript" version="^5.5.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Default threshold: Use 70% default if threshold not set (backward compatibility)</constraint>
+    <constraint>Threshold validation: Threshold must be between 0 and 100 (inclusive)</constraint>
+    <constraint>Real-time updates: Threshold changes must update all views in &lt; 500ms</constraint>
+    <constraint>Preference storage: Store threshold as user preference, persist across sessions</constraint>
+    <constraint>Backward compatibility: Existing code using default 70% should continue to work</constraint>
+    <constraint>Tenant isolation: User preferences are isolated by userId - each teacher has their own threshold</constraint>
+    <constraint>API authorization: Use withRole('TEACHER') helper to ensure only teachers can access threshold configuration</constraint>
+    <constraint>Component pattern: Follow existing component patterns from components/teacher/ - use TypeScript, Tailwind CSS, proper prop types</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>GET /api/teacher/preferences/threshold</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/teacher/preferences/threshold
+Response (200): {
+  threshold: number // Default 70 if not set
+}
+Response (403): { error: "Access denied" }</signature>
+      <path>app/api/teacher/preferences/threshold/route.ts</path>
+    </interface>
+    <interface>
+      <name>POST /api/teacher/preferences/threshold</name>
+      <kind>REST endpoint</kind>
+      <signature>POST /api/teacher/preferences/threshold
+Body: { threshold: number } // 0-100
+Response (200): { success: boolean, threshold: number }
+Response (400): { error: "Validation error", details: [...] }
+Response (403): { error: "Access denied" }</signature>
+      <path>app/api/teacher/preferences/threshold/route.ts</path>
+    </interface>
+    <interface>
+      <name>UserPreference Model (Prisma)</name>
+      <kind>Database model</kind>
+      <signature>model UserPreference {
+  id: String @id @default(cuid())
+  userId: String
+  key: String
+  value: String
+  createdAt: DateTime @default(now())
+  updatedAt: DateTime @updatedAt
+  user: User @relation(...)
+  @@unique([userId, key])
+  @@index([userId])
+}</signature>
+      <path>prisma/schema.prisma</path>
+    </interface>
+    <interface>
+      <name>getPreference() / setPreference()</name>
+      <kind>function</kind>
+      <signature>async function getPreference(userId: string, key: string, defaultValue: string): Promise&lt;string&gt;
+async function setPreference(userId: string, key: string, value: string): Promise&lt;void&gt;
+Manage user preferences. Key "accuracy_threshold" stores threshold value (0-100 as string).</signature>
+      <path>lib/preferences-service.ts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Unit tests for preferences service, integration tests for API endpoint and threshold integration, component tests for UI.
+      Focus on preference persistence, threshold validation, real-time updates, and backward compatibility.
+      Test edge cases: invalid threshold values, threshold not set (default), threshold changes, persistence across sessions.
+      Manual testing for UI interactions and real-time updates.
+    </standards>
+    <locations>
+      Unit tests: Create test file for lib/preferences-service.ts (e.g., lib/__tests__/preferences-service.test.ts)
+      Integration tests: Test API endpoint via browser dev tools Network tab or Postman
+      Component tests: Test ThresholdConfig component rendering and interactions
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test threshold change</description>
+        <steps>1. Change threshold in dashboard. 2. Verify alerts update accordingly. 3. Verify color coding updates. 4. Verify preference is saved. 5. Verify default 70% if not set.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test student list uses custom threshold</description>
+        <steps>1. Set custom threshold (e.g., 80%). 2. View student list. 3. Verify color coding uses custom threshold. 4. Verify status calculations use custom threshold.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test student detail uses custom threshold</description>
+        <steps>1. Set custom threshold. 2. View student detail. 3. Verify progress table uses custom threshold. 4. Verify alerts use custom threshold.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test real-time updates</description>
+        <steps>1. Change threshold and save. 2. Verify change applies immediately. 3. Verify all views update in real-time (&lt; 500ms). 4. Verify preference persists across sessions.</steps>
+      </test>
+      <test id="AC5">
+        <description>Test reset to default</description>
+        <steps>1. Set custom threshold. 2. Reset threshold. 3. Verify threshold returns to 70%. 4. Verify all views update accordingly.</steps>
+      </test>
+      <test id="AC6">
+        <description>Test validation</description>
+        <steps>1. Try to set threshold &lt; 0%. 2. Verify validation error displays. 3. Verify threshold not saved. 4. Try to set threshold &gt; 100%. 5. Verify validation error displays.</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

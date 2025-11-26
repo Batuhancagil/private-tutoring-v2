@@ -1,0 +1,202 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>8</epicId>
+    <storyId>8-2</storyId>
+    <title>Cash Payment Recording</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/8-2-cash-payment-recording.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Superadmin</asA>
+    <iWant>to record cash payments manually</iWant>
+    <soThat>I can track subscription payments</soThat>
+    <tasks>
+      <task>Design Payment model (if not exists) - add to prisma/schema.prisma</task>
+      <task>Create migration for Payment model</task>
+      <task>Create payment API endpoints (app/api/admin/payments/route.ts)</task>
+      <task>Create PaymentForm component (components/admin/PaymentForm.tsx)</task>
+      <task>Display payment history for subscriptions</task>
+      <task>Add payment status indicators</task>
+      <task>Integrate payment recording into subscription management UI</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>I am managing a subscription</given>
+      <when>I record a cash payment</when>
+      <then>payment is recorded</then>
+      <and>payment date is stored</and>
+      <and>payment amount is stored</and>
+      <and>payment history is visible</and>
+    </criterion>
+    <criterion id="AC2">
+      <given>I am recording a payment</given>
+      <when>I fill out the payment form</when>
+      <then>I can: Select the subscription, Enter payment amount, Enter payment date, Add optional notes, Save the payment</then>
+    </criterion>
+    <criterion id="AC3">
+      <given>I am viewing a subscription</given>
+      <when>I see payment history</when>
+      <then>I see: All payments for that subscription, Payment date and amount, Payment notes (if any), Total amount paid, Payments listed chronologically</then>
+    </criterion>
+    <criterion id="AC4">
+      <given>I want to track payment status</given>
+      <when>I view subscriptions</when>
+      <then>I can see: Which subscriptions have payments recorded, Total payments vs. subscription cost (if applicable), Payment status indicators</then>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 8: Subscription Management - Story 8.2</section>
+        <snippet>As a Superadmin, I want to record cash payments manually, So that I can track subscription payments. Payment recording UI, payment data model, payment history display.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR-009: Subscription Management</section>
+        <snippet>FR-009.2: Superadmin shall record cash payments manually. Track payment date, amount, and history per subscription.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/8-1-subscription-crud-operations.md</path>
+        <title>Story 8.1: Subscription CRUD Operations</title>
+        <section>Learnings</section>
+        <snippet>Subscription model exists. Subscription API endpoints established. Subscription management UI patterns established.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>Subscription</symbol>
+        <lines>142-153</lines>
+        <reason>Subscription model exists. Add Payment model with relation to Subscription for payment tracking.</reason>
+      </artifact>
+      <artifact>
+        <path>app/api/admin/subscriptions/route.ts</path>
+        <kind>API route</kind>
+        <symbol>GETHandler, POSTHandler</symbol>
+        <lines>1-200</lines>
+        <reason>Subscription API endpoint pattern to follow. Create payment API endpoints following similar structure.</reason>
+      </artifact>
+      <artifact>
+        <path>components/admin/SubscriptionForm.tsx</path>
+        <kind>component</kind>
+        <symbol>SubscriptionForm</symbol>
+        <lines>1-150</lines>
+        <reason>Subscription form component pattern to follow. Create PaymentForm following similar patterns.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="@prisma/client" version="^5.19.0" />
+        <package name="prisma" version="^5.19.0" />
+        <package name="zod" version="^3.23.8" />
+        <package name="typescript" version="^5.5.0" />
+        <package name="date-fns" version="^4.1.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Payment model: Payment model stores subscriptionId, amount, paymentDate, notes, timestamps</constraint>
+    <constraint>Global scope: Payments are global (not tenant-scoped) - Superadmin manages all payments</constraint>
+    <constraint>API authorization: Use withRole('SUPERADMIN') helper to ensure only superadmins can record payments</constraint>
+    <constraint>Payment history: Display payments chronologically with date, amount, notes, total</constraint>
+    <constraint>Payment status: Track which subscriptions have payments recorded, total payments vs. subscription cost</constraint>
+    <constraint>Component pattern: Follow existing component patterns from components/admin/ - use TypeScript, Tailwind CSS, proper prop types</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>POST /api/admin/payments</name>
+      <kind>REST endpoint</kind>
+      <signature>POST /api/admin/payments
+Body: { subscriptionId: string, amount: number, paymentDate: string, notes?: string }
+Response (200): { success: boolean, data: Payment }
+Response (400): { error: "Validation error", details: [...] }
+Response (403): { error: "Access denied" }</signature>
+      <path>app/api/admin/payments/route.ts</path>
+    </interface>
+    <interface>
+      <name>GET /api/admin/payments</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/admin/payments?subscriptionId=string
+Response (200): {
+  payments: [
+    {
+      id: string,
+      subscriptionId: string,
+      amount: number,
+      paymentDate: string,
+      notes: string | null,
+      createdAt: Date
+    }
+  ],
+  total: number
+}
+Response (403): { error: "Access denied" }</signature>
+      <path>app/api/admin/payments/route.ts</path>
+    </interface>
+    <interface>
+      <name>Payment Model (Prisma)</name>
+      <kind>Database model</kind>
+      <signature>model Payment {
+  id: String @id @default(cuid())
+  subscriptionId: String
+  amount: Float
+  paymentDate: DateTime
+  notes: String?
+  createdAt: DateTime @default(now())
+  updatedAt: DateTime @updatedAt
+  subscription: Subscription @relation(...)
+  @@index([subscriptionId])
+  @@index([paymentDate])
+}</signature>
+      <path>prisma/schema.prisma</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Integration tests for API endpoints, component tests for payment form, payment history display tests.
+      Focus on payment recording correctness, payment history accuracy, and authorization.
+      Test edge cases: invalid amounts, missing subscription, payment history calculations, multiple payments.
+      Manual testing for form interactions and payment history display.
+    </standards>
+    <locations>
+      Integration tests: Test API endpoint via browser dev tools Network tab or Postman
+      Component tests: Test PaymentForm component validation and submission
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test payment recording</description>
+        <steps>1. Record cash payment for subscription. 2. Verify payment recorded. 3. Verify payment date stored. 4. Verify payment amount stored. 5. Verify payment history visible.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test payment form</description>
+        <steps>1. Fill payment form. 2. Verify can select subscription. 3. Verify can enter payment amount and date. 4. Verify can add optional notes. 5. Verify payment saves.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test payment history</description>
+        <steps>1. View subscription with payments. 2. Verify payment history displays. 3. Verify shows all payments, dates, amounts, notes. 4. Verify total amount paid displayed. 5. Verify payments listed chronologically.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test payment status</description>
+        <steps>1. View subscriptions. 2. Verify can see which subscriptions have payments recorded. 3. Verify total payments vs. subscription cost displayed. 4. Verify payment status indicators displayed.</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

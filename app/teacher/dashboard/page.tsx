@@ -1,18 +1,10 @@
-import { redirect } from 'next/navigation';
-import { getCurrentUser, getDashboardUrl } from '@/lib/auth-helpers';
+import { requireTeacherWithSubscription } from '@/lib/teacher-page-helpers';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { TeacherDashboardClient } from '@/components/teacher/TeacherDashboardClient';
+import { ThresholdConfig } from '@/components/teacher/ThresholdConfig';
 
 export default async function TeacherDashboardPage() {
-  const user = await getCurrentUser();
-
-  if (!user) {
-    redirect('/login');
-  }
-
-  if (user.role !== 'TEACHER') {
-    redirect(getDashboardUrl(user.role));
-  }
+  await requireTeacherWithSubscription();
 
   return (
     <DashboardLayout>
@@ -26,34 +18,10 @@ export default async function TeacherDashboardPage() {
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardTitle>Students</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm">View and manage your students</p>
-            </CardContent>
-          </Card>
+        <TeacherDashboardClient />
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Assignments</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm">Create and manage assignments</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Resources</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm">Manage lessons, topics, and resources</p>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Threshold Configuration */}
+        <ThresholdConfig />
       </div>
     </DashboardLayout>
   );

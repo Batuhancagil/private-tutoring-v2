@@ -1,0 +1,173 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>4</epicId>
+    <storyId>4-3</storyId>
+    <title>Retroactive Logging (Past Days)</title>
+    <status>review</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/4-3-retroactive-logging-past-days.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Student</asA>
+    <iWant>to log progress for past days</iWant>
+    <soThat>I can catch up if I missed logging</soThat>
+    <tasks>
+      <task>Extend ProgressLog API to support date parameter (optional, defaults to today)</task>
+      <task>Validate date is not in the future and not too far in the past (max 1 year)</task>
+      <task>Update assignment lookup to use provided date</task>
+      <task>Add date picker component to ProgressLogForm</task>
+      <task>Set max date to today (disable future dates)</task>
+      <task>Update form to show selected date's assignment</task>
+      <task>Handle no assignment case for selected date</task>
+      <task>Pre-fill form with existing log data for selected date</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>I missed logging yesterday</given>
+      <when>I log retroactively</when>
+      <then>I can: Select a past date, See that day's assignment, Log right/wrong/empty counts, Save the retroactive log</then>
+      <and>the log is associated with the correct date</and>
+    </criterion>
+    <criterion id="AC2">
+      <given>I try to log for a future date</given>
+      <when>I select a date</when>
+      <then>future dates are disabled or rejected</then>
+      <and>I see an error message</and>
+    </criterion>
+    <criterion id="AC3">
+      <given>I select a past date with no assignment</given>
+      <when>I view the logging form</when>
+      <then>I see a message indicating no assignment for that date</then>
+    </criterion>
+    <criterion id="AC4">
+      <given>I have already logged for a past date</given>
+      <when>I select that date</when>
+      <then>I see my existing log data</then>
+      <and>I can update it</and>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 4: Daily Question Logging - Story 4.3</section>
+        <snippet>As a Student, I want to log progress for past days, So that I can catch up if I missed logging. Date picker for past dates, assignment lookup for selected date, retroactive log creation.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR-005: Daily Question Logging</section>
+        <snippet>FR-005.3: Students shall be able to log progress retroactively for past days. Date validation prevents future dates and limits past dates to reasonable range.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/4-2-daily-question-logging-form.md</path>
+        <title>Story 4.2: Daily Question Logging Form</title>
+        <section>Learnings</section>
+        <snippet>ProgressLog API endpoint established. ProgressLogForm component created. Form validation and submission patterns established.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>app/api/student/progress/route.ts</path>
+        <kind>API route</kind>
+        <symbol>POSTHandler, GETHandler</symbol>
+        <lines>1-282</lines>
+        <reason>ProgressLog API endpoint. Already supports optional date parameter. Extend to validate date range (not future, not too far past).</reason>
+      </artifact>
+      <artifact>
+        <path>components/student/ProgressLogForm.tsx</path>
+        <kind>component</kind>
+        <symbol>ProgressLogForm</symbol>
+        <lines>1-200</lines>
+        <reason>Progress logging form component. Add date picker for selecting past dates. Update to fetch assignment for selected date.</reason>
+      </artifact>
+      <artifact>
+        <path>app/api/student/assignments/route.ts</path>
+        <kind>API route</kind>
+        <symbol>GETHandler</symbol>
+        <lines>1-100</lines>
+        <reason>Student assignments API. Extend to accept date parameter for assignment lookup on specific date.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="@prisma/client" version="^5.19.0" />
+        <package name="prisma" version="^5.19.0" />
+        <package name="zod" version="^3.23.8" />
+        <package name="typescript" version="^5.5.0" />
+        <package name="date-fns" version="^4.1.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Date validation: Date must not be in the future, must not be more than 1 year in the past</constraint>
+    <constraint>Assignment lookup: Query assignment where selected date falls between startDate and endDate</constraint>
+    <constraint>Date picker: Use HTML5 date input or date picker library, set max date to today</constraint>
+    <constraint>Form update: Update form to show assignment and existing log for selected date</constraint>
+    <constraint>Error handling: Handle no assignment case for selected date gracefully</constraint>
+    <constraint>Component pattern: Follow existing component patterns from components/student/ - use TypeScript, Tailwind CSS, proper prop types</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>POST /api/student/progress (with date)</name>
+      <kind>REST endpoint</kind>
+      <signature>POST /api/student/progress
+Body: {
+  assignmentId: string,
+  rightCount: number,
+  wrongCount: number,
+  emptyCount: number,
+  bonusCount: number,
+  date: string // ISO date string (YYYY-MM-DD) for retroactive logging
+}
+Response (200): { success: boolean, data: ProgressLog }
+Response (400): { error: "Cannot log progress for future dates" } or { error: "Cannot log progress for dates more than 1 year ago" }
+Response (404): { error: "No active assignment found for this date" }</signature>
+      <path>app/api/student/progress/route.ts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Integration tests for API endpoint with date parameter, component tests for date picker and form updates.
+      Focus on date validation, assignment lookup for past dates, and retroactive log creation.
+      Test edge cases: future dates, dates too far in past, no assignment for selected date, existing log for past date.
+      Manual testing for date picker interactions and form updates.
+    </standards>
+    <locations>
+      Integration tests: Test API endpoint via browser dev tools Network tab or Postman
+      Component tests: Test ProgressLogForm component with date picker
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test retroactive logging</description>
+        <steps>1. Select past date (e.g., yesterday). 2. Verify that day's assignment displays. 3. Log progress. 4. Verify log is saved with correct date.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test future date rejection</description>
+        <steps>1. Try to select future date. 2. Verify future dates are disabled or rejected. 3. Verify error message displays.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test no assignment for date</description>
+        <steps>1. Select past date with no assignment. 2. Verify message displays indicating no assignment for that date.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test existing log for past date</description>
+        <steps>1. Select past date with existing log. 2. Verify existing log data pre-fills form. 3. Update and submit. 4. Verify log is updated.</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

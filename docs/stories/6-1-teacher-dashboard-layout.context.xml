@@ -1,0 +1,204 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>6</epicId>
+    <storyId>6-1</storyId>
+    <title>Teacher Dashboard Layout</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/6-1-teacher-dashboard-layout.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Teacher</asA>
+    <iWant>a dashboard that loads quickly</iWant>
+    <soThat>I can see student progress immediately</soThat>
+    <tasks>
+      <task>Create teacher dashboard API endpoint (app/api/teacher/dashboard/route.ts) with GET handler</task>
+      <task>Query all students for current teacher (tenant isolation)</task>
+      <task>Include summary metrics: total students, students needing attention count</task>
+      <task>Create TeacherDashboardClient component (components/teacher/TeacherDashboardClient.tsx)</task>
+      <task>Display students list (basic layout)</task>
+      <task>Display summary metrics card</task>
+      <task>Handle loading, error, and empty states</task>
+      <task>Implement pagination or virtual scrolling for many students (50+)</task>
+      <task>Update teacher dashboard page (app/teacher/dashboard/page.tsx)</task>
+      <task>Performance optimization: ensure load time &lt; 2 seconds</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>I am logged in as a Teacher</given>
+      <when>I open my dashboard</when>
+      <then>it loads in &lt; 2 seconds</then>
+      <and>displays key information immediately</and>
+      <and>shows all my students</and>
+    </criterion>
+    <criterion id="AC2">
+      <given>I have many students (50+)</given>
+      <when>I open my dashboard</when>
+      <then>it still loads in &lt; 2 seconds</then>
+      <and>displays students efficiently (pagination or virtual scrolling)</and>
+    </criterion>
+    <criterion id="AC3">
+      <given>I have no students yet</given>
+      <when>I open my dashboard</when>
+      <then>I see a friendly empty state message</then>
+      <and>I see a call-to-action to add students</and>
+    </criterion>
+    <criterion id="AC4">
+      <given>the dashboard is loading</given>
+      <when>I view the page</when>
+      <then>I see a loading indicator</then>
+      <and>the page is responsive and doesn't freeze</and>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 6: Teacher Dashboard &amp; Visibility - Story 6.1</section>
+        <snippet>As a Teacher, I want a dashboard that loads quickly, So that I can see student progress immediately. Dashboard layout, performance optimization (&lt; 2s load), student list display, key metrics summary.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR-007: Teacher Dashboard</section>
+        <snippet>FR-007.1: The system shall provide a teacher dashboard that loads quickly (&lt; 2 seconds) and displays key information immediately. Dashboard shows all students and summary metrics.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Performance</section>
+        <snippet>Performance targets: Dashboard must load in &lt; 2 seconds. Use database indexes, optimize queries, implement pagination or virtual scrolling for large lists.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>app/teacher/dashboard/page.tsx</path>
+        <kind>page</kind>
+        <symbol>TeacherDashboardPage</symbol>
+        <lines>1-60</lines>
+        <reason>Existing teacher dashboard page structure. Need to update to use new TeacherDashboardClient component and integrate with dashboard API.</reason>
+      </artifact>
+      <artifact>
+        <path>components/teacher/StudentList.tsx</path>
+        <kind>component</kind>
+        <symbol>StudentList</symbol>
+        <lines>1-174</lines>
+        <reason>Existing student list component pattern to follow. Dashboard will display students list with similar patterns (loading, error, empty states).</reason>
+      </artifact>
+      <artifact>
+        <path>app/api/teacher/students/route.ts</path>
+        <kind>API route</kind>
+        <symbol>GETHandler</symbol>
+        <lines>1-100</lines>
+        <reason>Example API pattern to follow: uses withRole() helper, Zod validation, error logging, performance tracking. Dashboard API will follow similar structure.</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>User</symbol>
+        <lines>20-42</lines>
+        <reason>User model with teacherId field for tenant isolation. Query students with teacherId filter. Index on teacherId for performance.</reason>
+      </artifact>
+      <artifact>
+        <path>lib/api-helpers.ts</path>
+        <kind>utility</kind>
+        <symbol>withRole, logApiError, trackPerformance</symbol>
+        <lines>1-200</lines>
+        <reason>API helper functions for role-based authorization, error logging, and performance tracking. Use these in dashboard API endpoint.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="@prisma/client" version="^5.19.0" />
+        <package name="prisma" version="^5.19.0" />
+        <package name="zod" version="^3.23.8" />
+        <package name="typescript" version="^5.5.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Performance target: Dashboard must load in &lt; 2 seconds per epics.md</constraint>
+    <constraint>Multi-tenant isolation: Student data is isolated by teacherId - ensure API only returns students for current teacher</constraint>
+    <constraint>API authorization: Use withRole('TEACHER') helper to ensure only teachers can access dashboard</constraint>
+    <constraint>Pagination: For many students (50+), implement pagination or virtual scrolling to maintain performance</constraint>
+    <constraint>Database optimization: Use indexed queries on User.teacherId for efficient student lookup</constraint>
+    <constraint>Error handling: Use logApiError() utility for error logging with context</constraint>
+    <constraint>Performance tracking: Use trackPerformance() utility to measure response time</constraint>
+    <constraint>Responsive design: Dashboard must be mobile-friendly and responsive</constraint>
+    <constraint>Component pattern: Follow existing component patterns from components/teacher/ - use TypeScript, Tailwind CSS, proper prop types</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>GET /api/teacher/dashboard</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/teacher/dashboard
+Response (200): {
+  students: [
+    {
+      id: string,
+      username: string,
+      createdAt: string
+    }
+  ],
+  summary: {
+    totalStudents: number,
+    studentsNeedingAttention: number
+  }
+}
+Response (403): { error: "Access denied" }</signature>
+      <path>app/api/teacher/dashboard/route.ts</path>
+    </interface>
+    <interface>
+      <name>TeacherDashboardClient Component</name>
+      <kind>React component</kind>
+      <signature>export function TeacherDashboardClient(): JSX.Element
+Displays dashboard with students list and summary metrics. Handles loading, error, and empty states.</signature>
+      <path>components/teacher/TeacherDashboardClient.tsx</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Integration tests for API endpoint, component tests for rendering, performance tests for load time.
+      Focus on performance requirements (&lt; 2s load), tenant isolation, and user experience (loading, error, empty states).
+      Test edge cases: no students, many students (50+), slow network, API errors.
+      Manual testing for visual appearance and performance measurement.
+    </standards>
+    <locations>
+      Integration tests: Test API endpoint via browser dev tools Network tab or Postman
+      Component tests: Test TeacherDashboardClient component rendering
+      Performance tests: Measure dashboard load time
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test dashboard loads quickly</description>
+        <steps>1. Open teacher dashboard. 2. Measure load time from page load to content display. 3. Verify load time &lt; 2 seconds. 4. Verify key information displays immediately.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test dashboard with many students</description>
+        <steps>1. Create 50+ students for teacher. 2. Open dashboard. 3. Verify load time &lt; 2 seconds. 4. Verify students displayed efficiently (pagination or virtual scrolling).</steps>
+      </test>
+      <test id="AC3">
+        <description>Test empty state</description>
+        <steps>1. Open dashboard with no students. 2. Verify friendly empty state message displays. 3. Verify call-to-action to add students displays.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test loading state</description>
+        <steps>1. Open dashboard. 2. Verify loading indicator displays during data fetch. 3. Verify page is responsive and doesn't freeze.</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

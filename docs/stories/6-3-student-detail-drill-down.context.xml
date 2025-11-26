@@ -1,0 +1,234 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>6</epicId>
+    <storyId>6-3</storyId>
+    <title>Student Detail Drill-Down</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/6-3-student-detail-drill-down.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Teacher</asA>
+    <iWant>to click a student to see detailed progress</iWant>
+    <soThat>I can understand their specific needs</soThat>
+    <tasks>
+      <task>Create student detail API endpoint (app/api/teacher/students/[id]/route.ts)</task>
+      <task>Calculate overall accuracy and total questions logged</task>
+      <task>Query progress by topic and lesson</task>
+      <task>Query low accuracy alerts for student</task>
+      <task>Create StudentDetailView component (components/teacher/StudentDetailView.tsx)</task>
+      <task>Create ProgressTrendsChart component for trends visualization</task>
+      <task>Integrate alerts display prominently</task>
+      <task>Add drill-down navigation from student list</task>
+      <task>Optimize data loading for &lt; 1 second load time</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>I see the student list</given>
+      <when>I click a student</when>
+      <then>I see a detailed view with: Student name and basic info, Detailed progress metrics, Question counts, Accuracy per topic/lesson, Progress trends, Low accuracy alerts</then>
+    </criterion>
+    <criterion id="AC2">
+      <given>I view student detail</given>
+      <when>I see the detail view</when>
+      <then>it displays: Overall accuracy percentage, Total questions logged, Breakdown by topic, Breakdown by lesson, Recent activity timeline</then>
+    </criterion>
+    <criterion id="AC3">
+      <given>a student has low accuracy alerts</given>
+      <when>I view student detail</when>
+      <then>I see alerts prominently displayed</then>
+      <and>alerts show topic name, current accuracy, threshold</and>
+    </criterion>
+    <criterion id="AC4">
+      <given>a student has progress logged over time</given>
+      <when>I view student detail</when>
+      <then>I see progress trends (graph or chart)</then>
+      <and>trends show accuracy over time</and>
+      <and>trends show question counts over time</and>
+    </criterion>
+    <criterion id="AC5">
+      <given>I am viewing student detail</given>
+      <when>I want to go back</when>
+      <then>I can close the detail view</then>
+      <and>return to the student list</and>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 6: Teacher Dashboard &amp; Visibility - Story 6.3</section>
+        <snippet>As a Teacher, I want to click a student to see detailed progress, So that I can understand their specific needs. Student detail view/modal, progress data display, trend visualization, drill-down navigation.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR-007: Teacher Dashboard</section>
+        <snippet>FR-007.3: The system shall provide drill-down views for detailed student progress. Display accuracy per topic/lesson, progress trends, and low accuracy alerts.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/6-2-color-coded-student-list.md</path>
+        <title>Story 6.2: Color-Coded Student List</title>
+        <section>Learnings</section>
+        <snippet>Student progress API endpoint pattern established. Student status calculation logic established. ColorCodedStudentList component created.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/5-6-low-accuracy-alerts.md</path>
+        <title>Story 5.6: Low Accuracy Alerts</title>
+        <section>Learnings</section>
+        <snippet>Alert service available in lib/alert-service.ts. Alert display patterns established.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>components/teacher/ColorCodedStudentList.tsx</path>
+        <kind>component</kind>
+        <symbol>ColorCodedStudentList</symbol>
+        <lines>1-200</lines>
+        <reason>Student list component to add click handler for drill-down. Add click handler on student row to open StudentDetailView.</reason>
+      </artifact>
+      <artifact>
+        <path>components/teacher/StudentDetailClient.tsx</path>
+        <kind>component</kind>
+        <symbol>StudentDetailClient</symbol>
+        <lines>1-100</lines>
+        <reason>Existing student detail component pattern to follow. Create new StudentDetailView component with similar patterns but extended for progress data.</reason>
+      </artifact>
+      <artifact>
+        <path>lib/progress-calculator.ts</path>
+        <kind>service</kind>
+        <symbol>calculateTopicProgress, calculateLessonProgress, calculateDualMetrics</symbol>
+        <lines>1-200</lines>
+        <reason>Progress calculation services for detailed metrics. Use for topic-level and lesson-level progress aggregation.</reason>
+      </artifact>
+      <artifact>
+        <path>lib/alert-service.ts</path>
+        <kind>service</kind>
+        <symbol>getAlerts</symbol>
+        <lines>1-100</lines>
+        <reason>Alert service for querying student alerts. Query alerts for student to display prominently in detail view.</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/Dialog.tsx</path>
+        <kind>component</kind>
+        <symbol>Dialog, ConfirmDialog</symbol>
+        <lines>1-100</lines>
+        <reason>Existing dialog component pattern. Use for modal/side panel for student detail view.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="@prisma/client" version="^5.19.0" />
+        <package name="prisma" version="^5.19.0" />
+        <package name="zod" version="^3.23.8" />
+        <package name="typescript" version="^5.5.0" />
+        <package name="recharts" version="^2.10.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Performance: Detail view should load in &lt; 1 second, use lazy loading and optimized queries</constraint>
+    <constraint>Detail view: Modal or side panel for student detail (consistent with existing UI patterns)</constraint>
+    <constraint>Progress aggregation: Aggregate progress data by topic and lesson using progress-calculator service</constraint>
+    <constraint>Alerts integration: Display alerts from alert-service, prominently shown in detail view</constraint>
+    <constraint>Trend visualization: Use charting library for progress trends (recharts recommended for React)</constraint>
+    <constraint>Multi-tenant isolation: Student data is isolated by teacherId - ensure API only returns student detail for current teacher's students</constraint>
+    <constraint>API authorization: Use withRole('TEACHER') helper to ensure only teachers can access student detail</constraint>
+    <constraint>Component pattern: Follow existing component patterns from components/teacher/ - use TypeScript, Tailwind CSS, proper prop types</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>GET /api/teacher/students/:id</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/teacher/students/:id
+Response (200): {
+  student: {
+    id: string,
+    username: string
+  },
+  overallAccuracy: number,
+  totalQuestions: number,
+  topics: TopicProgress[],
+  lessons: LessonProgress[],
+  alerts: AccuracyAlert[],
+  trends: ProgressTrend[]
+}
+Response (404): { error: "Student not found" }
+Response (403): { error: "Access denied" }</signature>
+      <path>app/api/teacher/students/[id]/route.ts</path>
+    </interface>
+    <interface>
+      <name>StudentDetailView Component</name>
+      <kind>React component</kind>
+      <signature>interface StudentDetailViewProps {
+  studentId: string;
+  onClose: () => void;
+}
+
+export function StudentDetailView({ studentId, onClose }: StudentDetailViewProps): JSX.Element
+Displays detailed student progress in modal/side panel.</signature>
+      <path>components/teacher/StudentDetailView.tsx</path>
+    </interface>
+    <interface>
+      <name>ProgressTrendsChart Component</name>
+      <kind>React component</kind>
+      <signature>interface ProgressTrendsChartProps {
+  trends: ProgressTrend[];
+  dateRange?: '7d' | '30d' | 'all';
+}
+
+export function ProgressTrendsChart({ trends, dateRange }: ProgressTrendsChartProps): JSX.Element
+Displays progress trends using recharts library.</signature>
+      <path>components/teacher/ProgressTrendsChart.tsx</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Integration tests for API endpoint, component tests for rendering, performance tests for load time.
+      Focus on data accuracy, performance requirements (&lt; 1s load), tenant isolation, and user experience.
+      Test edge cases: no progress logged, no alerts, many topics/lessons, slow network.
+      Manual testing for visual appearance and chart rendering.
+    </standards>
+    <locations>
+      Integration tests: Test API endpoint via browser dev tools Network tab or Postman
+      Component tests: Test StudentDetailView and ProgressTrendsChart component rendering
+      Performance tests: Measure detail view load time
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test drill-down navigation</description>
+        <steps>1. Click student in ColorCodedStudentList. 2. Verify StudentDetailView opens. 3. Verify displays student name, progress metrics, question counts, accuracy per topic/lesson, trends, alerts.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test detail view display</description>
+        <steps>1. Open student detail view. 2. Verify displays overall accuracy percentage. 3. Verify displays total questions logged. 4. Verify displays breakdown by topic and lesson. 5. Verify displays recent activity timeline.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test alerts display</description>
+        <steps>1. Open student detail for student with alerts. 2. Verify alerts prominently displayed. 3. Verify alerts show topic name, current accuracy, threshold. 4. Verify can identify which topics need attention.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test progress trends</description>
+        <steps>1. Open student detail for student with progress logged. 2. Verify progress trends chart displays. 3. Verify trends show accuracy over time. 4. Verify trends show question counts over time. 5. Test date range selector works.</steps>
+      </test>
+      <test id="AC5">
+        <description>Test close functionality</description>
+        <steps>1. Open student detail view. 2. Click close button. 3. Verify detail view closes. 4. Verify returns to student list.</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

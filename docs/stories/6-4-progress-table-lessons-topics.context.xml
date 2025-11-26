@@ -1,0 +1,223 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>6</epicId>
+    <storyId>6-4</storyId>
+    <title>Progress Table (Lessons &amp; Topics)</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/6-4-progress-table-lessons-topics.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Teacher</asA>
+    <iWant>to see a table of student progress by lessons and topics</iWant>
+    <soThat>I can identify weak areas</soThat>
+    <tasks>
+      <task>Create progress table API endpoint (app/api/teacher/students/[id]/progress-table/route.ts)</task>
+      <task>Query hierarchical data: lessons → topics with progress</task>
+      <task>Calculate status (green/yellow/red) using student-status-calculator</task>
+      <task>Create ProgressTable component (components/teacher/ProgressTable.tsx)</task>
+      <task>Display hierarchical table with expandable lesson rows</task>
+      <task>Implement sorting by all sortable columns</task>
+      <task>Implement filtering by lesson, status, accuracy range</task>
+      <task>Integrate progress table into student detail view</task>
+      <task>Optimize for many topics (virtual scrolling if needed)</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>I view student progress</given>
+      <when>I see the progress table</when>
+      <then>it shows: Progress grouped by lessons, Topics within each lesson, Accuracy per topic, Color-coded indicators, Question counts per topic</then>
+    </criterion>
+    <criterion id="AC2">
+      <given>I view the progress table</given>
+      <when>I see the table</when>
+      <then>columns include: Lesson name, Topic name, Accuracy percentage, Question counts, Status indicator, Last updated timestamp</then>
+    </criterion>
+    <criterion id="AC3">
+      <given>I have many lessons and topics</given>
+      <when>I view the progress table</when>
+      <then>I can sort by: Lesson name, Topic name, Accuracy, Question count</then>
+      <and>sorting is fast (&lt; 500ms)</and>
+    </criterion>
+    <criterion id="AC4">
+      <given>I want to filter the table</given>
+      <when>I apply filters</when>
+      <then>I can filter by: Lesson, Status (green/yellow/red), Accuracy range</then>
+      <and>filtering is fast (&lt; 500ms)</and>
+    </criterion>
+    <criterion id="AC5">
+      <given>I view the progress table</given>
+      <when>I see topics with low accuracy</when>
+      <then>they are highlighted (red indicator)</then>
+      <and>I can quickly identify weak areas</and>
+    </criterion>
+    <criterion id="AC6">
+      <given>a student has no progress for a topic</given>
+      <when>I view the progress table</when>
+      <then>the topic still appears in the table</then>
+      <and>shows "No data" or "Not started" status</and>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 6: Teacher Dashboard &amp; Visibility - Story 6.4</section>
+        <snippet>As a Teacher, I want to see a table of student progress by lessons and topics, So that I can identify weak areas. Table component, grouping logic (lessons → topics), sorting/filtering, color coding integration.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR-007: Teacher Dashboard</section>
+        <snippet>FR-007.4: The system shall provide a progress table showing student progress by lessons and topics. Support sorting and filtering for efficient analysis.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/6-3-student-detail-drill-down.md</path>
+        <title>Story 6.3: Student Detail Drill-Down</title>
+        <section>Learnings</section>
+        <snippet>Student detail API endpoint pattern established. StudentDetailView component created. Progress calculation integration established.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>components/teacher/StudentDetailView.tsx</path>
+        <kind>component</kind>
+        <symbol>StudentDetailView</symbol>
+        <lines>1-200</lines>
+        <reason>Student detail component to integrate progress table. Add ProgressTable component to detail view in dedicated section.</reason>
+      </artifact>
+      <artifact>
+        <path>lib/student-status-calculator.ts</path>
+        <kind>utility</kind>
+        <symbol>calculateStudentStatus</symbol>
+        <lines>1-50</lines>
+        <reason>Status calculation helper for color coding. Use for table row status indicators (green/yellow/red).</reason>
+      </artifact>
+      <artifact>
+        <path>lib/progress-calculator.ts</path>
+        <kind>service</kind>
+        <symbol>calculateTopicProgress</symbol>
+        <lines>1-200</lines>
+        <reason>Progress calculation service for topic-level metrics. Use for calculating accuracy and question counts per topic.</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>Lesson, Topic</symbol>
+        <lines>58-82</lines>
+        <reason>Lesson and Topic models for hierarchical data. Query lessons → topics for progress table structure.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="@prisma/client" version="^5.19.0" />
+        <package name="prisma" version="^5.19.0" />
+        <package name="zod" version="^3.23.8" />
+        <package name="typescript" version="^5.5.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Hierarchical data: Progress table displays hierarchical structure: Lessons → Topics</constraint>
+    <constraint>Status calculation: Use student-status-calculator for color coding (green/yellow/red)</constraint>
+    <constraint>Performance: Sorting and filtering must complete in &lt; 500ms, use client-side operations for speed</constraint>
+    <constraint>Empty states: Handle topics with no progress gracefully (show "Not started")</constraint>
+    <constraint>Table structure: Expandable rows for lessons, topics nested within</constraint>
+    <constraint>Multi-tenant isolation: Student data is isolated by teacherId - ensure API only returns progress for current teacher's students</constraint>
+    <constraint>API authorization: Use withRole('TEACHER') helper to ensure only teachers can access progress table</constraint>
+    <constraint>Component pattern: Follow existing component patterns from components/teacher/ - use TypeScript, Tailwind CSS, proper prop types</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>GET /api/teacher/students/:id/progress-table</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/teacher/students/:id/progress-table
+Response (200): {
+  lessons: [
+    {
+      id: string,
+      name: string,
+      topics: [
+        {
+          id: string,
+          name: string,
+          accuracy: number,
+          questionCounts: { right: number, wrong: number, empty: number, bonus: number },
+          status: 'green' | 'yellow' | 'red',
+          lastUpdated: Date
+        }
+      ]
+    }
+  ]
+}
+Response (404): { error: "Student not found" }
+Response (403): { error: "Access denied" }</signature>
+      <path>app/api/teacher/students/[id]/progress-table/route.ts</path>
+    </interface>
+    <interface>
+      <name>ProgressTable Component</name>
+      <kind>React component</kind>
+      <signature>interface ProgressTableProps {
+  studentId: string;
+  threshold?: number; // Default 70
+}
+
+export function ProgressTable({ studentId, threshold = 70 }: ProgressTableProps): JSX.Element
+Displays hierarchical progress table with sorting and filtering.</signature>
+      <path>components/teacher/ProgressTable.tsx</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Integration tests for API endpoint, component tests for rendering and interactions, performance tests for sorting/filtering speed.
+      Focus on hierarchical data structure, sorting/filtering performance (&lt; 500ms), color coding correctness, and empty state handling.
+      Test edge cases: no progress for topics, many topics, sorting edge cases, filtering combinations.
+      Manual testing for visual appearance and table interactions.
+    </standards>
+    <locations>
+      Integration tests: Test API endpoint via browser dev tools Network tab or Postman
+      Component tests: Test ProgressTable component rendering and interactions
+      Performance tests: Measure sorting/filtering speed
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test progress table display</description>
+        <steps>1. Open progress table for student. 2. Verify displays progress grouped by lessons. 3. Verify topics nested within lessons. 4. Verify accuracy per topic. 5. Verify color-coded indicators. 6. Verify question counts per topic.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test table columns</description>
+        <steps>1. View progress table. 2. Verify columns include: Lesson name, Topic name, Accuracy percentage, Question counts, Status indicator, Last updated timestamp.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test sorting</description>
+        <steps>1. Test sorting by lesson name. 2. Test sorting by topic name. 3. Test sorting by accuracy (ascending/descending). 4. Test sorting by question count. 5. Verify sorting completes in &lt; 500ms. 6. Verify lesson grouping preserved.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test filtering</description>
+        <steps>1. Test filter by lesson. 2. Test filter by status (green/yellow/red). 3. Test filter by accuracy range. 4. Verify filtering completes in &lt; 500ms. 5. Verify active filter indicators display.</steps>
+      </test>
+      <test id="AC5">
+        <description>Test low accuracy highlighting</description>
+        <steps>1. View progress table with low accuracy topics. 2. Verify topics with low accuracy highlighted (red indicator). 3. Verify can quickly identify weak areas.</steps>
+      </test>
+      <test id="AC6">
+        <description>Test empty state</description>
+        <steps>1. View progress table for topic with no progress. 2. Verify topic still appears in table. 3. Verify shows "No data" or "Not started" status.</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

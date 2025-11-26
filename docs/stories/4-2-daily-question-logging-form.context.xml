@@ -1,0 +1,189 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>4</epicId>
+    <storyId>4-2</storyId>
+    <title>Daily Question Logging Form</title>
+    <status>review</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/4-2-daily-question-logging-form.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Student</asA>
+    <iWant>to log my daily question progress</iWant>
+    <soThat>my teacher can track my work</soThat>
+    <tasks>
+      <task>Create ProgressLog API endpoint (app/api/student/progress/route.ts) with POST and GET handlers</task>
+      <task>Implement Zod schema validation: rightCount, wrongCount, emptyCount, bonusCount (all non-negative integers)</task>
+      <task>Add validation: total questions &lt;= 1000/day limit</task>
+      <task>Create or update ProgressLog record (upsert logic)</task>
+      <task>Create ProgressLogForm component (components/student/ProgressLogForm.tsx)</task>
+      <task>Handle form validation and error display</task>
+      <task>Display success feedback on submission</task>
+      <task>Handle existing log data (pre-fill form if already logged)</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>I see today's assignment</given>
+      <when>I log my progress</when>
+      <then>I can enter: Right answers count, Wrong answers count, Empty answers count, Bonus questions (optional)</then>
+      <and>the form validates input</and>
+      <and>my progress is saved</and>
+    </criterion>
+    <criterion id="AC2">
+      <given>I enter invalid data</given>
+      <when>I submit the form</when>
+      <then>I see validation errors: Negative numbers rejected, Total questions exceed 1000/day limit, Required fields marked</then>
+    </criterion>
+    <criterion id="AC3">
+      <given>I successfully log progress</given>
+      <when>I submit the form</when>
+      <then>I see success feedback</then>
+      <and>the form resets or shows updated progress</and>
+    </criterion>
+    <criterion id="AC4">
+      <given>I have already logged for today</given>
+      <when>I view the logging form</when>
+      <then>I see my existing log data</then>
+      <and>I can update it</and>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 4: Daily Question Logging - Story 4.2</section>
+        <snippet>As a Student, I want to log my daily question progress, So that my teacher can track my work. Logging form UI, input validation (max 1000/day), data submission, progress record creation.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR-005: Daily Question Logging</section>
+        <snippet>FR-005.2: Students shall log daily question progress (right/wrong/empty counts). Form validates input (max 1000 questions/day) and saves progress records.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/4-1-student-sees-todays-assignment.md</path>
+        <title>Story 4.1: Student Sees Today's Assignment</title>
+        <section>Learnings</section>
+        <snippet>Student assignments API endpoint established. TodaysAssignmentCard component created. Assignment lookup patterns established.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>app/api/student/progress/route.ts</path>
+        <kind>API route</kind>
+        <symbol>POSTHandler, GETHandler</symbol>
+        <lines>1-282</lines>
+        <reason>ProgressLog API endpoint with POST (create/update) and GET (retrieve today's log) handlers. Includes validation, upsert logic, and error handling.</reason>
+      </artifact>
+      <artifact>
+        <path>components/student/ProgressLogForm.tsx</path>
+        <kind>component</kind>
+        <symbol>ProgressLogForm</symbol>
+        <lines>1-200</lines>
+        <reason>Progress logging form component. Handles form submission, validation, error display, and success feedback.</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>ProgressLog</symbol>
+        <lines>121-140</lines>
+        <reason>ProgressLog model with rightCount, wrongCount, emptyCount, bonusCount fields. Unique constraint on studentId, assignmentId, date for upsert logic.</reason>
+      </artifact>
+      <artifact>
+        <path>lib/api-helpers.ts</path>
+        <kind>utility</kind>
+        <symbol>withRole, logApiError, trackPerformance</symbol>
+        <lines>1-200</lines>
+        <reason>API helper functions for role-based authorization, error logging, and performance tracking. Use these in progress API endpoint.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="@prisma/client" version="^5.19.0" />
+        <package name="prisma" version="^5.19.0" />
+        <package name="zod" version="^3.23.8" />
+        <package name="typescript" version="^5.5.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Input validation: All counts must be non-negative integers, total (right + wrong + empty + bonus) &lt;= 1000/day</constraint>
+    <constraint>Upsert logic: Create ProgressLog if doesn't exist, update if exists (unique constraint: studentId, assignmentId, date)</constraint>
+    <constraint>Tenant isolation: Student data is isolated by teacherId - ensure API only allows logging for current student's assignments</constraint>
+    <constraint>API authorization: Use withRole('STUDENT') helper to ensure only students can log their own progress</constraint>
+    <constraint>Form validation: Client-side validation for immediate feedback, server-side validation for security</constraint>
+    <constraint>Error handling: Display clear validation errors, handle API errors gracefully</constraint>
+    <constraint>Component pattern: Follow existing component patterns from components/student/ - use TypeScript, Tailwind CSS, proper prop types</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>POST /api/student/progress</name>
+      <kind>REST endpoint</kind>
+      <signature>POST /api/student/progress
+Body: {
+  assignmentId: string,
+  rightCount: number,
+  wrongCount: number,
+  emptyCount: number,
+  bonusCount: number,
+  date?: string // Optional, defaults to today
+}
+Response (200): { success: boolean, data: ProgressLog }
+Response (400): { error: "Validation error", details: [...] }
+Response (403): { error: "Access denied" }</signature>
+      <path>app/api/student/progress/route.ts</path>
+    </interface>
+    <interface>
+      <name>GET /api/student/progress</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/student/progress?date=YYYY-MM-DD
+Response (200): { success: boolean, data: { assignmentId: string, date: string, log: ProgressLog | null } }
+Response (404): { error: "No active assignment found for this date" }</signature>
+      <path>app/api/student/progress/route.ts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Integration tests for API endpoint, component tests for form validation and submission, performance tests for submission speed.
+      Focus on validation correctness, upsert logic, tenant isolation, and user experience.
+      Test edge cases: invalid inputs, 1000 question limit, existing log update, no assignment for date.
+      Manual testing for form interactions and error display.
+    </standards>
+    <locations>
+      Integration tests: Test API endpoint via browser dev tools Network tab or Postman
+      Component tests: Test ProgressLogForm component validation and submission
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test form submission</description>
+        <steps>1. Fill form with valid data (right: 50, wrong: 10, empty: 5, bonus: 2). 2. Submit form. 3. Verify progress is saved. 4. Verify success feedback displays.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test validation errors</description>
+        <steps>1. Try to submit with negative numbers. 2. Verify validation error displays. 3. Try to submit with total &gt; 1000. 4. Verify validation error displays.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test success feedback</description>
+        <steps>1. Submit valid form. 2. Verify success feedback displays. 3. Verify form resets or shows updated progress.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test existing log pre-fill</description>
+        <steps>1. View form after logging for today. 2. Verify existing log data pre-fills form. 3. Update values and submit. 4. Verify log is updated.</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

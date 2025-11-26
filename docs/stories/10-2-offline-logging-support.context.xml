@@ -1,0 +1,165 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>10</epicId>
+    <storyId>10-2</storyId>
+    <title>Offline Logging Support</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/10-2-offline-logging-support.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Student</asA>
+    <iWant>to log progress offline</iWant>
+    <soThat>I can log even without internet</soThat>
+    <tasks>
+      <task>Implement offline detection (navigator.onLine API, event listeners)</task>
+      <task>Implement local storage for offline logs (localStorage or IndexedDB)</task>
+      <task>Create offline storage service (lib/offline-storage.ts)</task>
+      <task>Update ProgressLogForm to save locally when offline</task>
+      <task>Implement sync mechanism when connection restored</task>
+      <task>Add offline indicator component</task>
+      <task>Handle sync conflicts and errors</task>
+      <task>Add sync status feedback</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>I am offline</given>
+      <when>I log my progress</when>
+      <then>log is saved locally</then>
+      <and>syncs when connection is restored</and>
+      <and>I see offline indicator</and>
+      <and>sync happens automatically</and>
+    </criterion>
+    <criterion id="AC2">
+      <given>I log progress while offline</given>
+      <when>I submit the log</when>
+      <then>I see confirmation that log was saved locally</then>
+      <and>log appears in my progress view</and>
+      <and>I can continue logging offline</and>
+    </criterion>
+    <criterion id="AC3">
+      <given>I have offline logs pending sync</given>
+      <when>connection is restored</when>
+      <then>logs sync automatically</then>
+      <and>I see sync status indicator</and>
+      <and>I receive confirmation when sync completes</and>
+    </criterion>
+    <criterion id="AC4">
+      <given>sync fails (server error, network issue)</given>
+      <when>I try to sync</when>
+      <then>logs remain in local storage</then>
+      <and>sync retries automatically</then>
+      <and>I see error message if sync fails repeatedly</and>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 10: Mobile Optimization &amp; Polish - Story 10.2</section>
+        <snippet>As a Student, I want to log progress offline, So that I can log even without internet. Offline storage (localStorage/IndexedDB), sync mechanism, offline detection.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/4-2-daily-question-logging-form.md</path>
+        <title>Story 4.2: Daily Question Logging Form</title>
+        <section>Learnings</section>
+        <snippet>ProgressLogForm component created. Form submission patterns established. Extend to support offline logging and sync.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>components/student/ProgressLogForm.tsx</path>
+        <kind>component</kind>
+        <symbol>ProgressLogForm</symbol>
+        <lines>1-200</lines>
+        <reason>Progress logging form component. Update to detect offline status, save locally when offline, and sync when online.</reason>
+      </artifact>
+      <artifact>
+        <path>app/api/student/progress/route.ts</path>
+        <kind>API route</kind>
+        <symbol>POSTHandler</symbol>
+        <lines>1-282</lines>
+        <reason>ProgressLog API endpoint. Handle sync requests from offline logs, detect duplicates, handle conflicts.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="typescript" version="^5.5.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Offline detection: Use navigator.onLine API and online/offline event listeners</constraint>
+    <constraint>Local storage: Use localStorage or IndexedDB for storing offline logs with metadata (timestamp, sync status)</constraint>
+    <constraint>Sync mechanism: Automatically sync when connection restored, handle sync conflicts</constraint>
+    <constraint>Error handling: Handle sync failures gracefully, retry automatically, show error messages if fails repeatedly</constraint>
+    <constraint>User feedback: Show offline indicator, sync status, confirmation when sync completes</constraint>
+    <constraint>Component pattern: Follow existing component patterns - use TypeScript, Tailwind CSS, proper prop types</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>useOnlineStatus() Hook</name>
+      <kind>React hook</kind>
+      <signature>function useOnlineStatus(): { isOnline: boolean, isOffline: boolean }
+Returns current online/offline status. Updates when connection status changes.</signature>
+      <path>lib/hooks/useOnlineStatus.ts</path>
+    </interface>
+    <interface>
+      <name>OfflineStorage Service</name>
+      <kind>service</kind>
+      <signature>class OfflineStorage {
+  saveLog(log: ProgressLog): Promise&lt;void&gt;
+  getPendingLogs(): Promise&lt;ProgressLog[]&gt;
+  markSynced(logId: string): Promise&lt;void&gt;
+  clearSynced(): Promise&lt;void&gt;
+}
+Manages offline log storage and sync.</signature>
+      <path>lib/offline-storage.ts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Offline detection tests, local storage tests, sync mechanism tests, error handling tests.
+      Focus on offline logging correctness, sync mechanism reliability, and user experience.
+      Test edge cases: multiple offline logs, sync conflicts, network failures, connection restoration.
+      Manual testing for offline scenarios and sync behavior.
+    </standards>
+    <locations>
+      Offline tests: Test offline detection and local storage via browser DevTools
+      Sync tests: Test sync mechanism when connection restored
+      Error handling tests: Test sync failures and retries
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test offline logging</description>
+        <steps>1. Go offline. 2. Log progress. 3. Verify log saved locally. 4. Verify offline indicator displays. 5. Restore connection. 6. Verify syncs automatically.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test offline confirmation</description>
+        <steps>1. Log progress while offline. 2. Submit log. 3. Verify confirmation displays (saved locally). 4. Verify log appears in progress view. 5. Verify can continue logging offline.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test sync on connection restore</description>
+        <steps>1. Have offline logs pending sync. 2. Restore connection. 3. Verify logs sync automatically. 4. Verify sync status indicator displays. 5. Verify confirmation when sync completes.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test sync failure handling</description>
+        <steps>1. Have offline logs. 2. Restore connection but simulate server error. 3. Verify logs remain in local storage. 4. Verify sync retries automatically. 5. Verify error message if sync fails repeatedly.</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

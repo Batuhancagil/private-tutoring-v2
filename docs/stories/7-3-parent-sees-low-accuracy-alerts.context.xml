@@ -1,0 +1,186 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>7</epicId>
+    <storyId>7-3</storyId>
+    <title>Parent Sees Low Accuracy Alerts</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/7-3-parent-sees-low-accuracy-alerts.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Parent</asA>
+    <iWant>to see low accuracy alerts for my child</iWant>
+    <soThat>I know when they need help</soThat>
+    <tasks>
+      <task>Create parent alerts API endpoint (app/api/parent/alerts/route.ts)</task>
+      <task>Query topics with low accuracy for parent's children</task>
+      <task>Use teacher's accuracy threshold (or default 70%)</task>
+      <task>Filter by active alerts (accuracy currently below threshold)</task>
+      <task>Group alerts by child if multiple children</task>
+      <task>Create ParentAlerts component (components/parent/ParentAlerts.tsx)</task>
+      <task>Display alerts prominently in parent dashboard</task>
+      <task>Show alert details: topic name, accuracy, threshold, date</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>my child's accuracy falls below threshold</given>
+      <when>I view the parent portal</when>
+      <then>I see low accuracy alerts</then>
+      <and>alerts are clearly visible</and>
+      <and>I can see which topics are struggling</and>
+    </criterion>
+    <criterion id="AC2">
+      <given>my child has multiple topics with low accuracy</given>
+      <when>I view alerts</when>
+      <then>I see all topics listed</then>
+      <and>each alert shows: Topic name, Current accuracy percentage, Threshold that was not met, Date when alert was triggered</and>
+    </criterion>
+    <criterion id="AC3">
+      <given>my child's accuracy improves above threshold</given>
+      <when>I view the parent portal</when>
+      <then>the alert for that topic is removed or marked as resolved</then>
+      <and>I can see historical alerts if needed</and>
+    </criterion>
+    <criterion id="AC4">
+      <given>I have multiple children</given>
+      <when>I view alerts</when>
+      <then>alerts are grouped by child</then>
+      <and>I can see which child needs help</and>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 7: Parent Portal - Story 7.3</section>
+        <snippet>As a Parent, I want to see low accuracy alerts for my child, So that I know when they need help. Alert display for parents, alert filtering (parent's child only), topic-level alert details.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR-008: Parent Portal</section>
+        <snippet>FR-008.3: Parents shall see low accuracy alerts for their children. Alerts visible in parent portal, grouped by child if multiple children.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/5-6-low-accuracy-alerts.md</path>
+        <title>Story 5.6: Low Accuracy Alerts</title>
+        <section>Learnings</section>
+        <snippet>Alert service available in lib/alert-service.ts. AccuracyAlert model stores alerts. Alerts visible to teachers and parents.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>lib/alert-service.ts</path>
+        <kind>service</kind>
+        <symbol>getAlerts</symbol>
+        <lines>1-100</lines>
+        <reason>Alert service for querying alerts. Extend to support parent queries filtering by parent's children via ParentStudent relationship.</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>AccuracyAlert</symbol>
+        <lines>1-50</lines>
+        <reason>AccuracyAlert model (if exists) or needs to be created. Stores alerts with studentId, topicId, accuracy, threshold. Query for parent's children.</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>ParentStudent</symbol>
+        <lines>44-56</lines>
+        <reason>ParentStudent model for parent-child relationships. Use to filter alerts for parent's children only.</reason>
+      </artifact>
+      <artifact>
+        <path>components/parent/ProgressGraphs.tsx</path>
+        <kind>component</kind>
+        <symbol>ProgressGraphs</symbol>
+        <lines>1-150</lines>
+        <reason>Parent dashboard component. Add ParentAlerts component to display alerts prominently.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="@prisma/client" version="^5.19.0" />
+        <package name="prisma" version="^5.19.0" />
+        <package name="zod" version="^3.23.8" />
+        <package name="typescript" version="^5.5.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Tenant isolation: Parent data is isolated by ParentStudent relationship - ensure API only returns alerts for parent's assigned children</constraint>
+    <constraint>API authorization: Use withRole('PARENT') helper to ensure only parents can access their children's alerts</constraint>
+    <constraint>Alert filtering: Filter alerts by active status (accuracy currently below threshold) and parent's children</constraint>
+    <constraint>Threshold: Use teacher's accuracy threshold (or default 70%) for alert determination</constraint>
+    <constraint>Alert grouping: Group alerts by child if parent has multiple children</constraint>
+    <constraint>Alert visibility: Alerts visible to parents per Story 5.6 - integrate alert display into parent portal</constraint>
+    <constraint>Component pattern: Follow existing component patterns from components/parent/ - use TypeScript, Tailwind CSS, proper prop types</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>GET /api/parent/alerts</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/parent/alerts?childId=string
+Response (200): {
+  alerts: [
+    {
+      id: string,
+      childId: string,
+      childName: string,
+      topicId: string,
+      topicName: string,
+      accuracy: number,
+      threshold: number,
+      createdAt: Date
+    }
+  ]
+}
+Response (403): { error: "Access denied" }</signature>
+      <path>app/api/parent/alerts/route.ts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Integration tests for API endpoint, component tests for alert display, tenant isolation tests.
+      Focus on alert filtering correctness, tenant isolation, and alert visibility.
+      Test edge cases: no alerts, multiple children, resolved alerts, multiple topics with alerts.
+      Manual testing for visual appearance and alert grouping.
+    </standards>
+    <locations>
+      Integration tests: Test API endpoint via browser dev tools Network tab or Postman
+      Component tests: Test ParentAlerts component rendering
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test alert display</description>
+        <steps>1. Login as parent with child having low accuracy. 2. View parent portal. 3. Verify low accuracy alerts display. 4. Verify alerts clearly visible. 5. Verify can see which topics are struggling.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test alert details</description>
+        <steps>1. View alerts for child with multiple topics with low accuracy. 2. Verify all topics listed. 3. Verify each alert shows topic name, current accuracy, threshold, date triggered.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test alert resolution</description>
+        <steps>1. View alerts for child whose accuracy improves. 2. Verify alert removed or marked as resolved. 3. Verify can see historical alerts if needed.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test multiple children</description>
+        <steps>1. Login as parent with multiple children. 2. View alerts. 3. Verify alerts grouped by child. 4. Verify can see which child needs help.</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

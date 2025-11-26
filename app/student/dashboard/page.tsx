@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser, getDashboardUrl } from '@/lib/auth-helpers';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { TodaysAssignmentCard } from '@/components/student/TodaysAssignmentCard';
+import { ProgressLogForm } from '@/components/student/ProgressLogForm';
 
 export default async function StudentDashboardPage() {
   const user = await getCurrentUser();
@@ -26,34 +27,8 @@ export default async function StudentDashboardPage() {
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Today&apos;s Assignment</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm">View today&apos;s assigned topic and questions</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Log Progress</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm">Log your daily question progress</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>My Progress</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm">View your progress and statistics</p>
-            </CardContent>
-          </Card>
-        </div>
+        <TodaysAssignmentCard />
+        <ProgressLogForm />
       </div>
     </DashboardLayout>
   );

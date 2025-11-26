@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser, getDashboardUrl } from '@/lib/auth-helpers';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { ParentDashboardClient } from '@/components/parent/ParentDashboardClient';
 
 export default async function ParentDashboardPage() {
   const user = await getCurrentUser();
@@ -26,25 +26,7 @@ export default async function ParentDashboardPage() {
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Child Progress</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm">View detailed progress reports and statistics</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Messages</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm">Communicate with your child&apos;s teacher</p>
-            </CardContent>
-          </Card>
-        </div>
+        <ParentDashboardClient />
       </div>
     </DashboardLayout>
   );

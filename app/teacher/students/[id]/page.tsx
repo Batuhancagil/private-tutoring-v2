@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { getCurrentUser, getDashboardUrl } from '@/lib/auth-helpers';
+import { requireTeacherWithSubscription } from '@/lib/teacher-page-helpers';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { prisma } from '@/lib/prisma';
 import { UserRole } from '@prisma/client';
@@ -12,16 +12,8 @@ interface StudentDetailPageProps {
 export default async function StudentDetailPage({
   params,
 }: StudentDetailPageProps) {
-  const user = await getCurrentUser();
+  const user = await requireTeacherWithSubscription();
   const { id } = await params;
-
-  if (!user) {
-    redirect('/login');
-  }
-
-  if (user.role !== 'TEACHER') {
-    redirect(getDashboardUrl(user.role));
-  }
 
   // Fetch student with tenant isolation check
   const studentData = await prisma.user.findFirst({

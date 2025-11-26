@@ -1,0 +1,158 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>10</epicId>
+    <storyId>10-1</storyId>
+    <title>Comprehensive Mobile Responsiveness</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/10-1-comprehensive-mobile-responsiveness.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>user on mobile</asA>
+    <iWant>all features to work well on mobile</iWant>
+    <soThat>I can use the platform on any device</soThat>
+    <tasks>
+      <task>Audit all pages for mobile responsiveness</task>
+      <task>Fix teacher, student, and parent dashboards for mobile</task>
+      <task>Fix timeline/calendar views for mobile</task>
+      <task>Fix all forms for mobile (touch-friendly inputs)</task>
+      <task>Fix navigation for mobile (hamburger menu)</task>
+      <task>Optimize images and assets for mobile</task>
+      <task>Add responsive utilities and breakpoints</task>
+      <task>Cross-device testing (iOS, Android, tablets)</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>I am on a mobile device</given>
+      <when>I use any feature</when>
+      <then>it: Displays correctly on mobile, Has touch-friendly interactions, Loads quickly (&lt; 1s for logging), Works in portrait and landscape, Is usable on tablets</then>
+    </criterion>
+    <criterion id="AC2">
+      <given>I am on a mobile device</given>
+      <when>I view the dashboard</when>
+      <then>it: Fits the screen width, Has readable text sizes, Has appropriately sized buttons and inputs, Has proper spacing and layout, Is easy to navigate</then>
+    </criterion>
+    <criterion id="AC3">
+      <given>I am on a tablet</given>
+      <when>I use the platform</when>
+      <then>it: Utilizes tablet screen space effectively, Has appropriate layout for larger screens, Maintains touch-friendly interactions, Works in both orientations</then>
+    </criterion>
+    <criterion id="AC4">
+      <given>I switch between mobile and desktop</given>
+      <when>I use the platform</when>
+      <then>layout adapts appropriately</then>
+      <and>all features remain functional</and>
+      <and>no content is cut off or hidden</and>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 10: Mobile Optimization &amp; Polish - Story 10.1</section>
+        <snippet>As a user on mobile, I want all features to work well on mobile, So that I can use the platform on any device. Comprehensive responsive design, touch interaction optimization, mobile performance, tablet support.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Mobile-First</section>
+        <snippet>Design mobile-first, then enhance for larger screens. Use Tailwind responsive utilities. Ensure touch targets minimum 44px × 44px.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>tailwind.config.ts</path>
+        <kind>config</kind>
+        <symbol>theme</symbol>
+        <lines>1-50</lines>
+        <reason>Tailwind CSS configuration. Ensure breakpoints configured correctly for responsive design (sm, md, lg, xl).</reason>
+      </artifact>
+      <artifact>
+        <path>app/layout.tsx</path>
+        <kind>layout</kind>
+        <symbol>RootLayout</symbol>
+        <lines>1-50</lines>
+        <reason>Root layout. Ensure viewport meta tag is set correctly for mobile responsiveness.</reason>
+      </artifact>
+      <artifact>
+        <path>components/layout/Navigation.tsx</path>
+        <kind>component</kind>
+        <symbol>Navigation</symbol>
+        <lines>1-100</lines>
+        <reason>Navigation component. Add mobile menu (hamburger menu) for mobile responsiveness.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="typescript" version="^5.5.0" />
+        <package name="tailwindcss" version="^3.4.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Mobile-first: Design mobile-first, then enhance for larger screens per architecture.md</constraint>
+    <constraint>Tailwind CSS: Use Tailwind responsive utilities (sm:, md:, lg:, xl:) for responsive design</constraint>
+    <constraint>Touch targets: Ensure all interactive elements are at least 44px × 44px for touch</constraint>
+    <constraint>Performance: Mobile performance is critical - ensure pages load quickly (&lt; 1s for logging)</constraint>
+    <constraint>Viewport meta: Ensure viewport meta tag is set correctly in app/layout.tsx</constraint>
+    <constraint>Cross-device testing: Test on iOS, Android, tablets, various browsers</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Responsive Design Pattern</name>
+      <kind>Design pattern</kind>
+      <signature>Use Tailwind responsive utilities:
+- Mobile (default): Base styles
+- Tablet (md:): md:grid-cols-2, md:text-lg
+- Desktop (lg:): lg:grid-cols-3, lg:text-xl
+- Large Desktop (xl:): xl:max-w-7xl</signature>
+      <path>All components and pages</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Mobile viewport tests, touch interaction tests, performance tests, cross-device testing.
+      Focus on responsive design correctness, touch target sizes, performance on mobile, and user experience.
+      Test edge cases: various screen sizes, portrait/landscape orientations, different browsers, slow network.
+      Manual testing on actual mobile devices and tablets.
+    </standards>
+    <locations>
+      Mobile viewport tests: Test on mobile viewport sizes (375px, 414px, 768px, 1024px)
+      Touch target tests: Verify all interactive elements meet 44px × 44px minimum
+      Performance tests: Measure page load times on mobile
+      Cross-device tests: Test on iOS, Android, tablets
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test mobile feature display</description>
+        <steps>1. Use any feature on mobile device. 2. Verify displays correctly. 3. Verify touch-friendly interactions. 4. Verify loads quickly (&lt; 1s for logging). 5. Test portrait and landscape. 6. Test on tablets.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test mobile dashboard</description>
+        <steps>1. View dashboard on mobile. 2. Verify fits screen width. 3. Verify readable text sizes. 4. Verify appropriately sized buttons and inputs. 5. Verify proper spacing and layout. 6. Verify easy to navigate.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test tablet experience</description>
+        <steps>1. Use platform on tablet. 2. Verify utilizes screen space effectively. 3. Verify appropriate layout for larger screens. 4. Verify touch-friendly interactions. 5. Test both orientations.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test responsive adaptation</description>
+        <steps>1. Switch between mobile and desktop. 2. Verify layout adapts appropriately. 3. Verify all features remain functional. 4. Verify no content cut off or hidden.</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

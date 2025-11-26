@@ -1,0 +1,275 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>5</epicId>
+    <storyId>5-2</storyId>
+    <title>Lesson-Level Aggregation</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/5-2-lesson-level-aggregation.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>system</asA>
+    <iWant>to aggregate topic metrics to lesson level</iWant>
+    <soThat>teachers can see overall lesson progress</soThat>
+    <tasks>
+      <task>Extend progress calculation service for lesson aggregation (lib/progress-calculator.ts) with calculateLessonProgress() function</task>
+      <task>Query all topics for the lesson (via Topic.lessonId)</task>
+      <task>For each topic, get topic progress (reuse calculateTopicProgress())</task>
+      <task>Calculate lesson accuracy: average of topic accuracies (simple average)</task>
+      <task>Calculate lesson total questions: sum of topic question counts</task>
+      <task>Handle edge cases: no topics, no logged questions, division by zero</task>
+      <task>Create lesson progress API endpoint (GET /api/teacher/progress/lesson/:lessonId)</task>
+      <task>Implement automatic lesson aggregation trigger in calculateTopicProgress()</task>
+      <task>Add caching for lesson aggregation results with cache invalidation</task>
+      <task>Unit tests for calculateLessonProgress() with edge cases</task>
+      <task>Integration tests for API endpoint and real-time trigger</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>topics have calculated accuracies</given>
+      <when>lesson progress is calculated</when>
+      <then>lesson accuracy = average of topic accuracies</then>
+      <and>lesson progress = sum of topic question counts</and>
+      <and>aggregation updates automatically</and>
+    </criterion>
+    <criterion id="AC2">
+      <given>a lesson has multiple topics with calculated progress</given>
+      <when>lesson-level aggregation is calculated</when>
+      <then>all topics for that lesson are included in the aggregation</then>
+      <and>lesson accuracy is the simple average (not weighted) of topic accuracies</and>
+      <and>lesson total questions = sum of all topic question counts</and>
+    </criterion>
+    <criterion id="AC3">
+      <given>a lesson has no topics with logged questions</given>
+      <when>lesson progress is calculated</when>
+      <then>lesson accuracy is undefined or 0</then>
+      <and>lesson total questions = 0</and>
+      <and>no error is thrown</and>
+    </criterion>
+    <criterion id="AC4">
+      <given>topic-level progress is recalculated</given>
+      <when>a topic belongs to a lesson</when>
+      <then>lesson-level aggregation is automatically recalculated</then>
+      <and>the recalculation completes in &lt; 500ms</and>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/stories/tech-spec-epic-5.md</path>
+        <title>Epic 5 Technical Specification</title>
+        <section>Lesson-Level Aggregation</section>
+        <snippet>Aggregate topic metrics to lesson level (average accuracy, sum of question counts) with automatic updates. Lesson accuracy = simple average of topic accuracies (not weighted by question count).</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 5: Progress Calculation &amp; Visualization - Story 5.2</section>
+        <snippet>As a system, I want to aggregate topic metrics to lesson level, So that teachers can see overall lesson progress. Lesson accuracy = average of topic accuracies, lesson progress = sum of topic question counts.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR-006: Progress Calculation &amp; Visualization</section>
+        <snippet>FR-006.3: The system shall aggregate topic-level metrics to lesson level. FR-006.5: The system shall update progress calculations in real-time as students log work.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Real-time Updates</section>
+        <snippet>Uses Next.js Server Actions with revalidation (no extra infrastructure) for real-time updates. Progress calculations are lightweight and run in-memory (no background job queue needed).</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/5-1-topic-level-accuracy-calculation.md</path>
+        <title>Story 5.1: Topic-Level Accuracy Calculation</title>
+        <section>Learnings</section>
+        <snippet>Progress calculation service established in lib/progress-calculator.ts with calculateTopicProgress() function. API pattern established for progress endpoints. Caching strategy established for calculation results.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>lib/progress-calculator.ts</path>
+        <kind>service</kind>
+        <symbol>calculateTopicProgress</symbol>
+        <lines>1-100</lines>
+        <reason>Existing progress calculation service with calculateTopicProgress() function. Need to extend with calculateLessonProgress() that reuses calculateTopicProgress() for each topic in a lesson.</reason>
+      </artifact>
+      <artifact>
+        <path>app/api/teacher/progress/topic/[topicId]/route.ts</path>
+        <kind>API route</kind>
+        <symbol>GETHandler</symbol>
+        <lines>1-100</lines>
+        <reason>Example API pattern to follow: uses withRole() helper, Zod validation, error logging with logApiError(), performance tracking with trackPerformance().</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>Topic</symbol>
+        <lines>70-82</lines>
+        <reason>Topic model has lessonId field for joining topics to lessons. Used to query all topics for a lesson.</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>Lesson</symbol>
+        <lines>58-68</lines>
+        <reason>Lesson model with id, name, teacherId. Has relation to Topic via topics field. Used to identify lesson for aggregation.</reason>
+      </artifact>
+      <artifact>
+        <path>lib/api-helpers.ts</path>
+        <kind>utility</kind>
+        <symbol>withRole, logApiError, trackPerformance</symbol>
+        <lines>1-200</lines>
+        <reason>API helper functions for role-based authorization, error logging, and performance tracking. Use these in new API endpoints.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="@prisma/client" version="^5.19.0" />
+        <package name="prisma" version="^5.19.0" />
+        <package name="zod" version="^3.23.8" />
+        <package name="typescript" version="^5.5.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Multi-tenant isolation: All lesson aggregations must respect teacherId isolation - teachers can only see progress for their own students</constraint>
+    <constraint>API authorization: Use withRole('TEACHER') helper to ensure only teachers can access progress data</constraint>
+    <constraint>Performance: Lesson-level aggregation must complete in &lt; 500ms from topic progress update</constraint>
+    <constraint>Real-time updates: Use Next.js Server Actions with revalidation (no extra infrastructure) for automatic updates</constraint>
+    <constraint>Aggregation formula: Lesson accuracy = simple average of topic accuracies (not weighted by question count)</constraint>
+    <constraint>Lesson progress: Lesson total questions = sum of topic question counts</constraint>
+    <constraint>Edge case handling: Must handle zero topics, no logged questions, division by zero gracefully</constraint>
+    <constraint>Database optimization: Use indexed queries on Topic.lessonId for efficient topic lookup</constraint>
+    <constraint>Error handling: Use logApiError() utility for error logging with context</constraint>
+    <constraint>Performance tracking: Use trackPerformance() utility to measure aggregation latency</constraint>
+    <constraint>Caching: Implement in-memory cache for aggregation results, invalidated when any topic progress updates</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>GET /api/teacher/progress/lesson/:lessonId</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/teacher/progress/lesson/:lessonId?studentId=string
+Response (200): {
+  lessonId: string,
+  lessonName: string,
+  accuracy: number,
+  totalQuestions: number,
+  topicCount: number,
+  topics: TopicProgress[],
+  lastUpdated: Date
+}
+Response (404): { error: "Lesson not found" }
+Response (403): { error: "Access denied" }</signature>
+      <path>app/api/teacher/progress/lesson/[lessonId]/route.ts</path>
+    </interface>
+    <interface>
+      <name>calculateLessonProgress()</name>
+      <kind>function</kind>
+      <signature>async function calculateLessonProgress(studentId: string, lessonId: string): Promise&lt;LessonProgress&gt;
+Input: studentId (string), lessonId (string)
+Output: LessonProgress {
+  lessonId: string,
+  lessonName: string,
+  accuracy: number,
+  totalQuestions: number,
+  topicCount: number,
+  topics: TopicProgress[],
+  lastUpdated: Date
+}
+Throws: Error if studentId or lessonId invalid, or tenant isolation violation</signature>
+      <path>lib/progress-calculator.ts</path>
+    </interface>
+    <interface>
+      <name>calculateTopicProgress()</name>
+      <kind>function</kind>
+      <signature>async function calculateTopicProgress(studentId: string, topicId: string): Promise&lt;TopicProgress&gt;
+Reused from Story 5.1. Called for each topic in lesson to get topic progress data.</signature>
+      <path>lib/progress-calculator.ts</path>
+    </interface>
+    <interface>
+      <name>Topic Model (Prisma)</name>
+      <kind>Database model</kind>
+      <signature>model Topic {
+  id: String @id @default(cuid())
+  name: String
+  lessonId: String
+  lesson: Lesson @relation(...)
+  assignments: Assignment[]
+  @@index([lessonId])
+}</signature>
+      <path>prisma/schema.prisma</path>
+    </interface>
+    <interface>
+      <name>Lesson Model (Prisma)</name>
+      <kind>Database model</kind>
+      <signature>model Lesson {
+  id: String @id @default(cuid())
+  name: String
+  teacherId: String?
+  topics: Topic[]
+  @@index([teacherId])
+}</signature>
+      <path>prisma/schema.prisma</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Unit tests for aggregation logic with edge cases, integration tests for API endpoints and real-time triggers.
+      Focus on aggregation correctness (simple average, sum of questions), performance requirements (&lt; 500ms), and tenant isolation.
+      Test edge cases: zero topics, no logged questions, single topic, division by zero, missing data.
+      Manual testing for API endpoints via browser dev tools or Postman.
+    </standards>
+    <locations>
+      Unit tests: Create test file for lib/progress-calculator.ts (e.g., lib/__tests__/progress-calculator.test.ts)
+      Integration tests: Test API endpoints via browser dev tools Network tab or Postman
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test lesson aggregation: accuracy = average, questions = sum</description>
+        <steps>1. Create test data: 3 topics with accuracies [80, 85, 90] and question counts [100, 150, 200]. 2. Call calculateLessonProgress(). 3. Verify lesson accuracy = (80+85+90)/3 = 85%. 4. Verify lesson total questions = 100+150+200 = 450.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test simple average (not weighted)</description>
+        <steps>1. Create test data: 2 topics with accuracies [50, 100] and question counts [10, 1000]. 2. Call calculateLessonProgress(). 3. Verify lesson accuracy = (50+100)/2 = 75% (not weighted by question count). 4. Verify lesson total questions = 1010.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test edge case: no topics</description>
+        <steps>1. Call calculateLessonProgress() for lesson with no topics. 2. Verify lesson accuracy is 0 or undefined (not error). 3. Verify lesson total questions = 0. 4. Verify no error is thrown.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test edge case: no logged questions</description>
+        <steps>1. Create lesson with topics but no ProgressLog entries. 2. Call calculateLessonProgress(). 3. Verify lesson accuracy is 0 or undefined. 4. Verify lesson total questions = 0. 5. Verify no error is thrown.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test automatic aggregation trigger</description>
+        <steps>1. Update topic progress via calculateTopicProgress(). 2. Verify lesson aggregation is triggered automatically. 3. Verify aggregation completes in &lt; 500ms. 4. Verify cache is invalidated and updated.</steps>
+      </test>
+      <test id="API1">
+        <description>Test API endpoint with valid inputs</description>
+        <steps>1. Call GET /api/teacher/progress/lesson/:lessonId?studentId=xxx with valid student and lesson. 2. Verify response includes lesson progress data. 3. Verify accuracy calculation is correct (simple average). 4. Verify response time &lt; 200ms for cached result.</steps>
+      </test>
+      <test id="API2">
+        <description>Test API endpoint tenant isolation</description>
+        <steps>1. Call GET /api/teacher/progress/lesson/:lessonId?studentId=xxx with student from different teacher. 2. Verify API returns 403 Forbidden. 3. Verify error message indicates access denied.</steps>
+      </test>
+      <test id="API3">
+        <description>Test API endpoint with non-existent lesson</description>
+        <steps>1. Call GET /api/teacher/progress/lesson/:lessonId?studentId=xxx with invalid lessonId. 2. Verify API returns 404 Not Found. 3. Verify error message indicates lesson not found.</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

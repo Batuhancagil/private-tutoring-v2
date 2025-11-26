@@ -1,0 +1,229 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>6</epicId>
+    <storyId>6-2</storyId>
+    <title>Color-Coded Student List</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/6-2-color-coded-student-list.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Teacher</asA>
+    <iWant>to see a color-coded list of my students</iWant>
+    <soThat>I can instantly identify who needs help</soThat>
+    <tasks>
+      <task>Create student progress summary API endpoint (app/api/teacher/students/progress/route.ts)</task>
+      <task>Query all students for current teacher and calculate accuracy for each</task>
+      <task>Determine status (green/yellow/red) based on threshold</task>
+      <task>Create ColorCodedStudentList component (components/teacher/ColorCodedStudentList.tsx)</task>
+      <task>Apply color coding: green (on track), yellow (needs attention), red (struggling)</task>
+      <task>Implement sorting and filtering by status</task>
+      <task>Create student-status-calculator helper function (lib/student-status-calculator.ts)</task>
+      <task>Add real-time updates for progress changes</task>
+      <task>Update dashboard to use color-coded list</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>I have students with calculated progress</given>
+      <when>I view my student list</when>
+      <then>I see: Green (accuracy ≥ threshold), Yellow (near threshold), Red (accuracy &lt; threshold - 5%)</then>
+      <and>colors update in real-time</and>
+    </criterion>
+    <criterion id="AC2">
+      <given>I view the color-coded student list</given>
+      <when>I see the list</when>
+      <then>each student row shows: Student name, Current accuracy percentage, Color indicator, Status text</then>
+    </criterion>
+    <criterion id="AC3">
+      <given>I have many students</given>
+      <when>I view the student list</when>
+      <then>I can sort by status (green/yellow/red)</then>
+      <and>I can filter by status</and>
+      <and>sorting/filtering is fast (&lt; 500ms)</and>
+    </criterion>
+    <criterion id="AC4">
+      <given>a student's accuracy changes</given>
+      <when>progress is recalculated</when>
+      <then>the color indicator updates automatically</then>
+      <and>the update is visible within 500ms</and>
+    </criterion>
+    <criterion id="AC5">
+      <given>I have no threshold set</given>
+      <when>I view the student list</when>
+      <then>default threshold of 70% is used</then>
+      <and>colors are calculated based on default threshold</and>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 6: Teacher Dashboard &amp; Visibility - Story 6.2</section>
+        <snippet>As a Teacher, I want to see a color-coded list of my students, So that I can instantly identify who needs help. Green: Students on track, Yellow: Students needing attention, Red: Students struggling.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR-007: Teacher Dashboard</section>
+        <snippet>FR-007.2: The system shall display a color-coded student list for instant status visibility. Colors update in real-time and support sorting/filtering.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/6-1-teacher-dashboard-layout.md</path>
+        <title>Story 6.1: Teacher Dashboard Layout</title>
+        <section>Learnings</section>
+        <snippet>Dashboard API endpoint pattern established. TeacherDashboardClient component created. Student query patterns established.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/5-6-low-accuracy-alerts.md</path>
+        <title>Story 5.6: Low Accuracy Alerts</title>
+        <section>Learnings</section>
+        <snippet>Progress calculation services available. Default threshold 70% established. Alert service available for integration.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>components/teacher/TeacherDashboardClient.tsx</path>
+        <kind>component</kind>
+        <symbol>TeacherDashboardClient</symbol>
+        <lines>1-100</lines>
+        <reason>Dashboard component to integrate color-coded list. Replace basic student list with ColorCodedStudentList component.</reason>
+      </artifact>
+      <artifact>
+        <path>components/teacher/StudentList.tsx</path>
+        <kind>component</kind>
+        <symbol>StudentList</symbol>
+        <lines>1-174</lines>
+        <reason>Existing student list component pattern to follow. ColorCodedStudentList will extend this pattern with color coding and status.</reason>
+      </artifact>
+      <artifact>
+        <path>lib/progress-calculator.ts</path>
+        <kind>service</kind>
+        <symbol>calculateDualMetrics</symbol>
+        <lines>1-200</lines>
+        <reason>Progress calculation service for accuracy calculation. Use calculateDualMetrics() or create student-specific accuracy calculation.</reason>
+      </artifact>
+      <artifact>
+        <path>lib/progress-helpers.ts</path>
+        <kind>utility</kind>
+        <symbol>getProgressColor</symbol>
+        <lines>1-50</lines>
+        <reason>Progress helper functions from Story 5.4. Can reuse getProgressColor() logic for status calculation.</reason>
+      </artifact>
+      <artifact>
+        <path>app/api/teacher/dashboard/route.ts</path>
+        <kind>API route</kind>
+        <symbol>GETHandler</symbol>
+        <lines>1-100</lines>
+        <reason>Dashboard API endpoint pattern to follow. Create similar endpoint for student progress summary.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="@prisma/client" version="^5.19.0" />
+        <package name="prisma" version="^5.19.0" />
+        <package name="zod" version="^3.23.8" />
+        <package name="typescript" version="^5.5.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Status calculation: Green if accuracy ≥ threshold, Yellow if threshold - 5% ≤ accuracy &lt; threshold, Red if accuracy &lt; threshold - 5%</constraint>
+    <constraint>Default threshold: Use 70% default if not set (customization in Story 6.5)</constraint>
+    <constraint>Real-time updates: Colors update automatically when progress changes, visible within 500ms</constraint>
+    <constraint>Performance: Sorting and filtering must complete in &lt; 500ms</constraint>
+    <constraint>Accessibility: Provide text alternatives for colors (status text) for screen readers</constraint>
+    <constraint>Multi-tenant isolation: Student data is isolated by teacherId - ensure API only returns students for current teacher</constraint>
+    <constraint>API authorization: Use withRole('TEACHER') helper to ensure only teachers can access student progress</constraint>
+    <constraint>Component pattern: Follow existing component patterns from components/teacher/ - use TypeScript, Tailwind CSS, proper prop types</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>GET /api/teacher/students/progress</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/teacher/students/progress
+Response (200): {
+  students: [
+    {
+      id: string,
+      username: string,
+      accuracy: number,
+      status: 'green' | 'yellow' | 'red',
+      statusText: string
+    }
+  ],
+  threshold: number
+}
+Response (403): { error: "Access denied" }</signature>
+      <path>app/api/teacher/students/progress/route.ts</path>
+    </interface>
+    <interface>
+      <name>calculateStudentStatus()</name>
+      <kind>function</kind>
+      <signature>function calculateStudentStatus(accuracy: number, threshold: number = 70): { color: 'green' | 'yellow' | 'red', status: string }
+Input: accuracy (number 0-100), threshold (number, default 70)
+Output: { color: 'green' | 'yellow' | 'red', status: string }
+Returns color and status text based on accuracy vs threshold</signature>
+      <path>lib/student-status-calculator.ts</path>
+    </interface>
+    <interface>
+      <name>ColorCodedStudentList Component</name>
+      <kind>React component</kind>
+      <signature>interface ColorCodedStudentListProps {
+  threshold?: number; // Default 70
+}
+
+export function ColorCodedStudentList({ threshold = 70 }: ColorCodedStudentListProps): JSX.Element
+Displays color-coded student list with sorting and filtering by status.</signature>
+      <path>components/teacher/ColorCodedStudentList.tsx</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Unit tests for status calculation logic, integration tests for API endpoint and real-time updates, component tests for rendering and interactions.
+      Focus on status calculation correctness, real-time updates, sorting/filtering performance, and accessibility.
+      Test edge cases: accuracy exactly at threshold, accuracy at threshold - 5%, no threshold set, many students.
+      Manual testing for visual appearance and accessibility with screen readers.
+    </standards>
+    <locations>
+      Unit tests: Create test file for lib/student-status-calculator.ts (e.g., lib/__tests__/student-status-calculator.test.ts)
+      Integration tests: Test API endpoint via browser dev tools Network tab or Postman
+      Component tests: Test ColorCodedStudentList component rendering and interactions
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test color coding logic</description>
+        <steps>1. Test accuracy 75% ≥ threshold 70% → green. 2. Test accuracy 68% (threshold - 2%) → yellow. 3. Test accuracy 60% &lt; (threshold - 5%) → red. 4. Verify colors update in real-time.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test student row display</description>
+        <steps>1. Render ColorCodedStudentList with student data. 2. Verify each row shows student name, accuracy percentage, color indicator, status text. 3. Verify color indicator is visually distinct.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test sorting and filtering</description>
+        <steps>1. Test sorting by status (green → yellow → red). 2. Test filtering by status (show only struggling). 3. Verify sorting/filtering completes in &lt; 500ms. 4. Verify visual feedback for active filters.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test real-time updates</description>
+        <steps>1. Update student progress. 2. Verify color indicator updates automatically. 3. Verify update visible within 500ms. 4. Verify status text updates correctly.</steps>
+      </test>
+      <test id="AC5">
+        <description>Test default threshold</description>
+        <steps>1. View student list without threshold set. 2. Verify default 70% threshold is used. 3. Verify colors calculated based on default threshold.</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

@@ -1,0 +1,203 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>5</epicId>
+    <storyId>5-5</storyId>
+    <title>Progress Bars &amp; Percentage Indicators</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/5-5-progress-bars-percentage-indicators.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>user</asA>
+    <iWant>to see progress bars and percentages</iWant>
+    <soThat>I can quickly understand progress</soThat>
+    <tasks>
+      <task>Create ProgressBar component (components/teacher/ProgressBar.tsx)</task>
+      <task>Implement progress bar with width based on percentage (0-100)</task>
+      <task>Display percentage text (e.g., "75%")</task>
+      <task>Add smooth CSS transitions for value changes</task>
+      <task>Implement responsive design for mobile devices</task>
+      <task>Create PercentageIndicator component (or extend ProgressBar)</task>
+      <task>Integrate progress bars with progress displays (topic, lesson, dual metrics)</task>
+      <task>Add performance optimization (avoid layout shifts, smooth animations)</task>
+      <task>Component tests for ProgressBar rendering and animations</task>
+      <task>Responsive tests for mobile viewport</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>progress is calculated</given>
+      <when>I view progress</when>
+      <then>I see: Progress bars showing completion, Percentage indicators, Clear visual representation, Responsive design (mobile-friendly)</then>
+    </criterion>
+    <criterion id="AC2">
+      <given>a progress bar is displayed</given>
+      <when>progress is 0-100%</when>
+      <then>bar width represents percentage accurately</then>
+      <and>percentage text is displayed clearly</and>
+      <and>bar is visually distinct from background</and>
+    </criterion>
+    <criterion id="AC3">
+      <given>progress bars are displayed on mobile devices</given>
+      <when>viewed on small screens</when>
+      <then>bars remain readable and functional</then>
+      <and>percentage text is appropriately sized</and>
+      <and>layout adapts responsively</and>
+    </criterion>
+    <criterion id="AC4">
+      <given>progress bars are displayed</given>
+      <when>progress updates in real-time</when>
+      <then>bars animate smoothly to new values</then>
+      <and>percentage updates immediately</and>
+      <and>no flickering or layout shifts occur</and>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/stories/tech-spec-epic-5.md</path>
+        <title>Epic 5 Technical Specification</title>
+        <section>Progress Bars &amp; Percentages</section>
+        <snippet>Visual progress bars showing completion and percentage indicators. Responsive design for mobile devices. Smooth animations for real-time updates.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 5: Progress Calculation &amp; Visualization - Story 5.5</section>
+        <snippet>As a user, I want to see progress bars and percentages, So that I can quickly understand progress. Progress bars showing completion, percentage indicators, responsive design.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR-006: Progress Calculation &amp; Visualization</section>
+        <snippet>FR-006.6: The system shall display progress bars and percentage indicators for visual progress representation. Must be responsive and mobile-friendly.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Mobile-First</section>
+        <snippet>Use Tailwind CSS responsive utilities, mobile-first approach. Ensure all components work on mobile devices (&lt; 640px).</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>components/teacher/ProgressIndicator.tsx</path>
+        <kind>component</kind>
+        <symbol>ProgressIndicator</symbol>
+        <lines>1-100</lines>
+        <reason>Existing progress indicator component pattern to follow. ProgressBar will follow similar component structure and patterns.</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/Card.tsx</path>
+        <kind>component</kind>
+        <symbol>Card</symbol>
+        <lines>1-50</lines>
+        <reason>Existing UI components to use for consistent styling. ProgressBar can use Card component for container.</reason>
+      </artifact>
+      <artifact>
+        <path>components/teacher/ResourcesPageClient.tsx</path>
+        <kind>component</kind>
+        <symbol>ResourcesPageClient</symbol>
+        <lines>1-334</lines>
+        <reason>Example component pattern with responsive design. Follow similar patterns for ProgressBar responsive implementation.</reason>
+      </artifact>
+      <artifact>
+        <path>tailwind.config.ts</path>
+        <kind>config</kind>
+        <symbol>theme</symbol>
+        <lines>1-50</lines>
+        <reason>Tailwind CSS configuration with responsive breakpoints. Use Tailwind responsive utilities for mobile-first design.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="typescript" version="^5.5.0" />
+        <package name="tailwindcss" version="^3.4.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Responsive design: Use Tailwind CSS responsive utilities, mobile-first approach per architecture.md</constraint>
+    <constraint>Animation: Use CSS transitions for smooth animations, avoid JavaScript-based animations for performance</constraint>
+    <constraint>Performance: Ensure animations don't cause performance issues, use CSS transforms where possible</constraint>
+    <constraint>Component pattern: Follow existing component patterns from components/teacher/ - use TypeScript, Tailwind CSS, proper prop types</constraint>
+    <constraint>Design system: Use Tailwind CSS utility classes, ensure consistency with existing design system</constraint>
+    <constraint>Integration: Progress bars must integrate with existing progress displays (topic, lesson, dual metrics)</constraint>
+    <constraint>Real-time updates: Progress bars will update automatically when progress recalculates (from Epic 5 stories)</constraint>
+    <constraint>Accessibility: Progress bars should have proper labels and text alternatives (from Story 5.4)</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>ProgressBar Component</name>
+      <kind>React component</kind>
+      <signature>interface ProgressBarProps {
+  value: number; // 0-100 percentage
+  max?: number; // Default 100
+  label?: string; // Optional label
+  className?: string;
+}
+
+export function ProgressBar({ value, max = 100, label, className }: ProgressBarProps): JSX.Element</signature>
+      <path>components/teacher/ProgressBar.tsx</path>
+    </interface>
+    <interface>
+      <name>PercentageIndicator Component</name>
+      <kind>React component</kind>
+      <signature>interface PercentageIndicatorProps {
+  value: number; // 0-100 percentage
+  label?: string; // Optional label (e.g., "Accuracy: 75%")
+  className?: string;
+}
+
+export function PercentageIndicator({ value, label, className }: PercentageIndicatorProps): JSX.Element</signature>
+      <path>components/teacher/PercentageIndicator.tsx</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Component tests for rendering and animations, responsive tests for mobile viewport, visual tests for appearance.
+      Focus on progress bar accuracy, smooth animations, responsive design, and integration with progress displays.
+      Test edge cases: 0% progress, 100% progress, negative values, values &gt; 100%.
+      Manual testing for visual appearance, animations, and responsive behavior.
+    </standards>
+    <locations>
+      Component tests: Test ProgressBar component rendering and animations
+      Responsive tests: Test progress bars on mobile viewport (&lt; 640px)
+      Visual tests: Test progress bar appearance and styling
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test progress bar rendering</description>
+        <steps>1. Render ProgressBar with value 75%. 2. Verify bar width represents 75% accurately. 3. Verify percentage text displays "75%". 4. Verify bar is visually distinct from background.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test progress bar accuracy</description>
+        <steps>1. Test with 0% progress → bar width 0%, displays "0%". 2. Test with 100% progress → bar width 100%, displays "100%". 3. Test with 50% progress → bar width 50%, displays "50%". 4. Verify percentage text is clearly readable.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test responsive design</description>
+        <steps>1. Test progress bars on mobile viewport (&lt; 640px). 2. Verify bars remain readable and functional. 3. Verify percentage text is appropriately sized. 4. Verify layout adapts responsively.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test smooth animations</description>
+        <steps>1. Update progress bar value from 50% to 75%. 2. Verify bar animates smoothly to new value. 3. Verify percentage updates immediately. 4. Verify no flickering or layout shifts occur.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test real-time updates</description>
+        <steps>1. Simulate real-time progress update. 2. Verify progress bar updates smoothly. 3. Verify percentage updates immediately. 4. Verify animations are smooth (60fps).</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

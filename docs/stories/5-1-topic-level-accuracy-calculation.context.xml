@@ -1,0 +1,288 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>5</epicId>
+    <storyId>5-1</storyId>
+    <title>Topic-Level Accuracy Calculation</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/5-1-topic-level-accuracy-calculation.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>system</asA>
+    <iWant>to calculate topic-level accuracy</iWant>
+    <soThat>teachers can see student mastery per topic</soThat>
+    <tasks>
+      <task>Create progress calculation service (lib/progress-calculator.ts) with calculateTopicProgress() function</task>
+      <task>Query ProgressLog data for topic aggregation via Assignment.topicId</task>
+      <task>Create topic progress API endpoint (GET /api/teacher/progress/topic/:topicId)</task>
+      <task>Implement real-time calculation trigger in ProgressLog POST handler</task>
+      <task>Add caching for calculation results with cache invalidation</task>
+      <task>Add calculation result storage (in-memory cache or database)</task>
+      <task>Unit tests for calculateTopicProgress() with edge cases</task>
+      <task>Integration tests for API endpoint and real-time trigger</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>a student has logged questions for a topic</given>
+      <when>progress is calculated</when>
+      <then>accuracy = (Right / (Right + Wrong + Empty + Bonus)) × 100</then>
+      <and>the calculation updates in real-time (&lt; 500ms)</and>
+      <and>results are stored for quick retrieval</and>
+    </criterion>
+    <criterion id="AC2">
+      <given>a student has logged questions for multiple assignments on the same topic</given>
+      <when>topic-level accuracy is calculated</when>
+      <then>all ProgressLog entries for that topic are aggregated</then>
+      <and>accuracy is calculated across all logged questions</and>
+    </criterion>
+    <criterion id="AC3">
+      <given>a student has no logged questions for a topic</given>
+      <when>topic-level accuracy is calculated</when>
+      <then>accuracy is undefined or 0</then>
+      <and>no error is thrown</and>
+    </criterion>
+    <criterion id="AC4">
+      <given>a student has logged questions</given>
+      <when>a new ProgressLog entry is created or updated</when>
+      <then>topic-level accuracy is recalculated automatically</then>
+      <and>the recalculation completes in &lt; 500ms</and>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/stories/tech-spec-epic-5.md</path>
+        <title>Epic 5 Technical Specification</title>
+        <section>Topic-Level Accuracy Calculation</section>
+        <snippet>Calculate accuracy per topic using formula: (Right / (Right + Wrong + Empty)) × 100, updating in real-time (&lt; 500ms) when students log questions. Calculation results cached for quick retrieval.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 5: Progress Calculation &amp; Visualization - Story 5.1</section>
+        <snippet>As a system, I want to calculate topic-level accuracy, So that teachers can see student mastery per topic. Acceptance criteria includes accuracy formula, real-time updates (&lt; 500ms), and result storage.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR-006: Progress Calculation &amp; Visualization - FR-006.2</section>
+        <snippet>FR-006.2: The system shall calculate topic-level accuracy: (Right / (Right + Wrong + Empty)) × 100. FR-006.5: The system shall update progress calculations in real-time as students log work.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Real-time Updates</section>
+        <snippet>Uses Next.js Server Actions with revalidation (no extra infrastructure) for real-time updates. Progress calculations are lightweight and run in-memory (no background job queue needed).</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>API Pattern</section>
+        <snippet>Standard Next.js Route Handlers (app/api/*/route.ts) with Zod validation, withRole() helper for authorization, error logging, and performance tracking.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>ProgressLog</symbol>
+        <lines>121-140</lines>
+        <reason>ProgressLog model with rightCount, wrongCount, emptyCount, bonusCount fields. Has indexes on studentId, assignmentId, date for efficient aggregation queries.</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>Assignment</symbol>
+        <lines>98-119</lines>
+        <reason>Assignment model links to Topic via topicId. Has relation to ProgressLog via logs field. Used to aggregate ProgressLog entries by topic.</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>Topic</symbol>
+        <lines>70-82</lines>
+        <reason>Topic model with id, name, lessonId. Has relation to Assignment. Used to identify topic for progress calculation.</reason>
+      </artifact>
+      <artifact>
+        <path>app/api/teacher/assignments/route.ts</path>
+        <kind>API route</kind>
+        <symbol>GETHandler, POSTHandler</symbol>
+        <lines>25-312</lines>
+        <reason>Example API pattern to follow: uses withRole() helper, Zod validation, error logging with logApiError(), performance tracking with trackPerformance().</reason>
+      </artifact>
+      <artifact>
+        <path>app/api/student/progress/route.ts</path>
+        <kind>API route</kind>
+        <symbol>POSTHandler</symbol>
+        <lines>1-100</lines>
+        <reason>ProgressLog creation/update endpoint. Needs to be updated to trigger topic progress recalculation after ProgressLog create/update.</reason>
+      </artifact>
+      <artifact>
+        <path>lib/api-helpers.ts</path>
+        <kind>utility</kind>
+        <symbol>withRole, logApiError, trackPerformance</symbol>
+        <lines>1-100</lines>
+        <reason>API helper functions for role-based authorization, error logging, and performance tracking. Use these in new API endpoints.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="@prisma/client" version="^5.19.0" />
+        <package name="prisma" version="^5.19.0" />
+        <package name="zod" version="^3.23.8" />
+        <package name="typescript" version="^5.5.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Multi-tenant isolation: All progress calculations must respect teacherId isolation - teachers can only see progress for their own students</constraint>
+    <constraint>API authorization: Use withRole('TEACHER') helper to ensure only teachers can access progress data</constraint>
+    <constraint>Performance: Topic-level accuracy calculation must complete in &lt; 500ms from ProgressLog update</constraint>
+    <constraint>Real-time updates: Use Next.js Server Actions with revalidation (no extra infrastructure) for automatic updates</constraint>
+    <constraint>Calculation formula: Accuracy = (rightCount / (rightCount + wrongCount + emptyCount + bonusCount)) × 100</constraint>
+    <constraint>Edge case handling: Must handle zero questions, division by zero, missing data gracefully</constraint>
+    <constraint>Database optimization: Use indexed queries on ProgressLog.studentId, ProgressLog.assignmentId, ProgressLog.date for efficient aggregation</constraint>
+    <constraint>Error handling: Use logApiError() utility for error logging with context</constraint>
+    <constraint>Performance tracking: Use trackPerformance() utility to measure calculation latency</constraint>
+    <constraint>Caching: Implement in-memory cache for calculation results, invalidated on ProgressLog updates</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>GET /api/teacher/progress/topic/:topicId</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/teacher/progress/topic/:topicId?studentId=string
+Response (200): {
+  topicId: string,
+  topicName: string,
+  accuracy: number,
+  totalQuestions: number,
+  rightCount: number,
+  wrongCount: number,
+  emptyCount: number,
+  bonusCount: number,
+  lastUpdated: Date
+}
+Response (404): { error: "Topic not found" }
+Response (403): { error: "Access denied" }</signature>
+      <path>app/api/teacher/progress/topic/[topicId]/route.ts</path>
+    </interface>
+    <interface>
+      <name>calculateTopicProgress()</name>
+      <kind>function</kind>
+      <signature>async function calculateTopicProgress(studentId: string, topicId: string): Promise&lt;TopicProgress&gt;
+Input: studentId (string), topicId (string)
+Output: TopicProgress {
+  topicId: string,
+  topicName: string,
+  accuracy: number,
+  totalQuestions: number,
+  rightCount: number,
+  wrongCount: number,
+  emptyCount: number,
+  bonusCount: number,
+  lastUpdated: Date
+}
+Throws: Error if studentId or topicId invalid, or tenant isolation violation</signature>
+      <path>lib/progress-calculator.ts</path>
+    </interface>
+    <interface>
+      <name>POST /api/student/progress</name>
+      <kind>REST endpoint</kind>
+      <signature>POST /api/student/progress
+Body: { assignmentId: string, date?: string, rightCount: number, wrongCount: number, emptyCount: number, bonusCount: number }
+Response: { success: boolean, data: ProgressLog }
+After create/update: Triggers topic progress recalculation</signature>
+      <path>app/api/student/progress/route.ts</path>
+    </interface>
+    <interface>
+      <name>ProgressLog Model (Prisma)</name>
+      <kind>Database model</kind>
+      <signature>model ProgressLog {
+  id: String @id @default(cuid())
+  studentId: String
+  assignmentId: String
+  date: DateTime @db.Date
+  rightCount: Int @default(0)
+  wrongCount: Int @default(0)
+  emptyCount: Int @default(0)
+  bonusCount: Int @default(0)
+  createdAt: DateTime @default(now())
+  updatedAt: DateTime @updatedAt
+  student: User @relation(...)
+  assignment: Assignment @relation(...)
+  @@unique([studentId, assignmentId, date])
+  @@index([studentId])
+  @@index([assignmentId])
+  @@index([date])
+}</signature>
+      <path>prisma/schema.prisma</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Unit tests for calculation logic with edge cases, integration tests for API endpoints and real-time triggers.
+      Focus on accuracy calculation correctness, performance requirements (&lt; 500ms), and tenant isolation.
+      Test edge cases: zero questions, all right, all wrong, division by zero, missing data.
+      Manual testing for API endpoints via browser dev tools or Postman.
+    </standards>
+    <locations>
+      Unit tests: Create test file for lib/progress-calculator.ts (e.g., lib/__tests__/progress-calculator.test.ts)
+      Integration tests: Test API endpoints via browser dev tools Network tab or Postman
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test accuracy calculation formula</description>
+        <steps>1. Create test data: rightCount=300, wrongCount=100, emptyCount=50, bonusCount=0. 2. Call calculateTopicProgress(). 3. Verify accuracy = (300 / (300+100+50+0)) × 100 = 66.67%. 4. Verify totalQuestions = 450.</steps>
+      </test>
+      <test id="AC1">
+        <description>Test real-time calculation performance</description>
+        <steps>1. Create ProgressLog entry via POST /api/student/progress. 2. Measure time from POST completion to topic progress recalculation. 3. Verify calculation completes in &lt; 500ms. 4. Verify cached result is available immediately.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test aggregation across multiple assignments</description>
+        <steps>1. Create multiple assignments for same topic. 2. Log progress for each assignment. 3. Call calculateTopicProgress() for topic. 4. Verify all ProgressLog entries are aggregated. 5. Verify accuracy calculated across all logged questions.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test edge case: zero questions</description>
+        <steps>1. Call calculateTopicProgress() for topic with no ProgressLog entries. 2. Verify accuracy is 0 or undefined (not error). 3. Verify no error is thrown. 4. Verify API returns appropriate response.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test edge case: division by zero protection</description>
+        <steps>1. Create ProgressLog with all zero counts (rightCount=0, wrongCount=0, emptyCount=0, bonusCount=0). 2. Call calculateTopicProgress(). 3. Verify handles division by zero gracefully. 4. Verify returns 0 or undefined, not error.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test automatic recalculation trigger</description>
+        <steps>1. Create ProgressLog via POST /api/student/progress. 2. Verify topic progress recalculation is triggered automatically. 3. Verify recalculation completes in &lt; 500ms. 4. Verify cache is invalidated and updated.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test recalculation on ProgressLog update</description>
+        <steps>1. Update existing ProgressLog via POST /api/student/progress. 2. Verify topic progress recalculation is triggered. 3. Verify updated accuracy reflects new values. 4. Verify cache is updated.</steps>
+      </test>
+      <test id="API1">
+        <description>Test API endpoint with valid inputs</description>
+        <steps>1. Call GET /api/teacher/progress/topic/:topicId?studentId=xxx with valid student and topic. 2. Verify response includes topic progress data. 3. Verify accuracy calculation is correct. 4. Verify response time &lt; 200ms for cached result.</steps>
+      </test>
+      <test id="API2">
+        <description>Test API endpoint tenant isolation</description>
+        <steps>1. Call GET /api/teacher/progress/topic/:topicId?studentId=xxx with student from different teacher. 2. Verify API returns 403 Forbidden. 3. Verify error message indicates access denied.</steps>
+      </test>
+      <test id="API3">
+        <description>Test API endpoint with non-existent topic</description>
+        <steps>1. Call GET /api/teacher/progress/topic/:topicId?studentId=xxx with invalid topicId. 2. Verify API returns 404 Not Found. 3. Verify error message indicates topic not found.</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

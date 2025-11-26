@@ -1,18 +1,9 @@
-import { redirect } from 'next/navigation';
-import { getCurrentUser, getDashboardUrl } from '@/lib/auth-helpers';
+import { requireTeacherWithSubscription } from '@/lib/teacher-page-helpers';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ResourcesPageClient } from '@/components/teacher/ResourcesPageClient';
 
 export default async function ResourcesPage() {
-  const user = await getCurrentUser();
-
-  if (!user) {
-    redirect('/login');
-  }
-
-  if (user.role !== 'TEACHER') {
-    redirect(getDashboardUrl(user.role));
-  }
+  await requireTeacherWithSubscription();
 
   return (
     <DashboardLayout>

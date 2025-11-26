@@ -1,0 +1,165 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>4</epicId>
+    <storyId>4-4</storyId>
+    <title>Mobile-Optimized Logging Interface</title>
+    <status>review</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/4-4-mobile-optimized-logging-interface.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Student</asA>
+    <iWant>a fast, simple mobile interface for logging</iWant>
+    <soThat>I can log my work quickly (&lt; 2 minutes)</soThat>
+    <tasks>
+      <task>Optimize component loading performance (code splitting, reduce API calls)</task>
+      <task>Implement large, touch-friendly inputs (min 44x44px touch targets)</task>
+      <task>Use number pad keyboard for numeric inputs</task>
+      <task>Ensure form is visible above keyboard when focused</task>
+      <task>Pre-fill defaults (yesterday's topic if applicable)</task>
+      <task>Optimize form submission speed (&lt; 500ms)</task>
+      <task>Add loading states to prevent layout shift</task>
+      <task>Handle slow network connections gracefully</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>I am on a mobile device</given>
+      <when>I open the logging interface</when>
+      <then>it: Loads in &lt; 1 second, Has large touch-friendly inputs, Pre-fills defaults, Requires minimal scrolling, Submits quickly</then>
+    </criterion>
+    <criterion id="AC2">
+      <given>I am on a mobile device</given>
+      <when>I interact with the form</when>
+      <then>Input fields are easy to tap (min 44x44px), Keyboard appears appropriately (number pad), Form visible above keyboard when focused, Submit button easily accessible</then>
+    </criterion>
+    <criterion id="AC3">
+      <given>I am on a mobile device</given>
+      <when>I submit the form</when>
+      <then>Submission is fast (&lt; 500ms), Success feedback is clear and visible, I can quickly log again if needed</then>
+    </criterion>
+    <criterion id="AC4">
+      <given>I have slow network connection</given>
+      <when>I load the logging interface</when>
+      <then>Interface shows loading state, Form is usable even if assignment data loads slowly, Error states are handled gracefully</then>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 4: Daily Question Logging - Story 4.4</section>
+        <snippet>As a Student, I want a fast, simple mobile interface for logging, So that I can log my work quickly (&lt; 2 minutes). Mobile-first responsive design, touch-optimized inputs, performance optimization.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR-005: Daily Question Logging</section>
+        <snippet>FR-005.4: The logging interface shall be mobile-optimized for fast, simple daily logging. Loads in &lt; 1 second, touch-friendly inputs, minimal scrolling required.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Mobile-First</section>
+        <snippet>Use Tailwind CSS responsive utilities, mobile-first approach. Ensure all components work on mobile devices (&lt; 640px). Touch targets minimum 44x44px.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>components/student/ProgressLogForm.tsx</path>
+        <kind>component</kind>
+        <symbol>ProgressLogForm</symbol>
+        <lines>1-200</lines>
+        <reason>Progress logging form component. Optimize for mobile: large touch targets, number pad inputs, keyboard handling, performance optimization.</reason>
+      </artifact>
+      <artifact>
+        <path>components/ui/Input.tsx</path>
+        <kind>component</kind>
+        <symbol>Input</symbol>
+        <lines>1-50</lines>
+        <reason>Input component. Ensure mobile-friendly styling with large touch targets and appropriate input types (number for numeric inputs).</reason>
+      </artifact>
+      <artifact>
+        <path>tailwind.config.ts</path>
+        <kind>config</kind>
+        <symbol>theme</symbol>
+        <lines>1-50</lines>
+        <reason>Tailwind CSS configuration. Use responsive utilities for mobile-first design. Ensure touch targets meet 44x44px minimum.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="typescript" version="^5.5.0" />
+        <package name="tailwindcss" version="^3.4.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Performance: Interface must load in &lt; 1 second, form submission must complete in &lt; 500ms</constraint>
+    <constraint>Touch targets: Minimum 44x44px for all interactive elements</constraint>
+    <constraint>Keyboard: Use number pad (input type="number" or inputmode="numeric") for numeric inputs</constraint>
+    <constraint>Keyboard handling: Ensure form is visible above keyboard when input is focused</constraint>
+    <constraint>Mobile-first: Use Tailwind CSS responsive utilities, mobile-first approach</constraint>
+    <constraint>Loading states: Show loading indicators to prevent layout shift</constraint>
+    <constraint>Error handling: Handle slow network connections gracefully with clear error messages</constraint>
+    <constraint>Component pattern: Follow existing component patterns from components/student/ - use TypeScript, Tailwind CSS, proper prop types</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>ProgressLogForm Component (Mobile-Optimized)</name>
+      <kind>React component</kind>
+      <signature>interface ProgressLogFormProps {
+  assignmentId?: string;
+  date?: string;
+}
+
+export function ProgressLogForm({ assignmentId, date }: ProgressLogFormProps): JSX.Element
+Mobile-optimized progress logging form with large touch targets, number pad inputs, and fast submission.</signature>
+      <path>components/student/ProgressLogForm.tsx</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Performance tests for load time and submission speed, mobile viewport tests for touch targets and keyboard handling, accessibility tests for mobile usability.
+      Focus on mobile performance, touch target sizes, keyboard handling, and user experience on mobile devices.
+      Test edge cases: slow network, large form data, keyboard interactions, different mobile screen sizes.
+      Manual testing on actual mobile devices or mobile emulators.
+    </standards>
+    <locations>
+      Performance tests: Measure interface load time and form submission speed
+      Mobile viewport tests: Test on mobile viewport sizes (375px, 414px)
+      Touch target tests: Verify all interactive elements meet 44x44px minimum
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test mobile interface load time</description>
+        <steps>1. Open logging interface on mobile device. 2. Measure load time. 3. Verify loads in &lt; 1 second. 4. Verify large touch-friendly inputs. 5. Verify minimal scrolling required.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test touch targets and keyboard</description>
+        <steps>1. Tap input fields on mobile. 2. Verify number pad appears for numeric inputs. 3. Verify form is visible above keyboard. 4. Verify submit button is easily accessible. 5. Verify all touch targets are at least 44x44px.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test form submission speed</description>
+        <steps>1. Fill form on mobile. 2. Submit form. 3. Measure submission time. 4. Verify completes in &lt; 500ms. 5. Verify success feedback is clear and visible.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test slow network handling</description>
+        <steps>1. Simulate slow network connection. 2. Load logging interface. 3. Verify loading state displays. 4. Verify form is usable even if assignment data loads slowly. 5. Verify error states handled gracefully.</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

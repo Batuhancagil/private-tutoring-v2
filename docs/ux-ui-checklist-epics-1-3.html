@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UX/UI Checklist - Epics 1-3 | Private Tutoring Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .url-info {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-family: monospace;
+            word-break: break-all;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .epic-section {
+            margin-bottom: 40px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .epic-header {
+            background: #f9fafb;
+            padding: 20px;
+            border-bottom: 2px solid #e5e7eb;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+        
+        .epic-header:hover {
+            background: #f3f4f6;
+        }
+        
+        .epic-header h2 {
+            color: #1f2937;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .epic-number {
+            background: #667eea;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .epic-progress {
+            font-size: 0.9em;
+            color: #6b7280;
+            margin-left: 15px;
+        }
+        
+        .toggle-icon {
+            font-size: 1.5em;
+            transition: transform 0.3s;
+        }
+        
+        .epic-content {
+            padding: 20px;
+            display: none;
+        }
+        
+        .epic-content.expanded {
+            display: block;
+        }
+        
+        .feature-group {
+            margin-bottom: 30px;
+        }
+        
+        .feature-group h3 {
+            color: #374151;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .checklist-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: #f9fafb;
+            border-radius: 6px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            transition: background 0.2s;
+        }
+        
+        .checklist-item:hover {
+            background: #f3f4f6;
+        }
+        
+        .checklist-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .checklist-item label {
+            flex: 1;
+            cursor: pointer;
+            line-height: 1.5;
+            color: #374151;
+        }
+        
+        .checklist-item.completed {
+            background: #d1fae5;
+        }
+        
+        .checklist-item.completed label {
+            text-decoration: line-through;
+            color: #6b7280;
+        }
+        
+        .notes-section {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            border-radius: 4px;
+        }
+        
+        .notes-section textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.9em;
+            resize: vertical;
+        }
+        
+        .summary {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .summary h2 {
+            color: #1f2937;
+            margin-bottom: 15px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e5e7eb;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .stat-box h4 {
+            color: #6b7280;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .stat-box .value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        
+        .instructions {
+            background: #eff6ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .instructions h3 {
+            color: #1e40af;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ul {
+            margin-left: 20px;
+            color: #1e3a8a;
+        }
+        
+        .instructions li {
+            margin: 8px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .content {
+                padding: 15px;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 UX/UI Testing Checklist</h1>
+            <p>Epics 1-3: Foundation, User Management & Timeline System</p>
+            <div class="url-info">
+                <strong>Test URL:</strong><br>
+                https://private-tutoring-v2-production.up.railway.app/teacher/dashboard
+            </div>
+        </div>
+        
+        <div class="content">
+            <div class="instructions">
+                <h3>📋 Testing Instructions</h3>
+                <ul>
+                    <li>Open the application URL in Chrome browser</li>
+                    <li>Log in with your teacher credentials</li>
+                    <li>Navigate through each section systematically</li>
+                    <li>Check each item as you verify it works correctly</li>
+                    <li>Add notes for any issues or observations</li>
+                    <li>Your progress is automatically saved in browser storage</li>
+                </ul>
+            </div>
+            
+            <div class="summary">
+                <h2>📊 Overall Progress</h2>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="overall-progress" style="width: 0%">0%</div>
+                </div>
+                <div class="stats">
+                    <div class="stat-box">
+                        <h4>Total Items</h4>
+                        <div class="value" id="total-items">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <h4>Completed</h4>
+                        <div class="value" id="completed-items">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <h4>Remaining</h4>
+                        <div class="value" id="remaining-items">0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Epic 1: Foundation & Authentication -->
+            <div class="epic-section">
+                <div class="epic-header" onclick="toggleEpic('epic1')">
+                    <h2>
+                        <span class="epic-number">1</span>
+                        Epic 1: Foundation & Authentication
+                        <span class="epic-progress" id="epic1-progress">(0/0)</span>
+                    </h2>
+                    <span class="toggle-icon" id="epic1-icon">▼</span>
+                </div>
+                <div class="epic-content" id="epic1-content">
+                    <div class="feature-group">
+                        <h3>🔐 Authentication & Login</h3>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="auth-1" onchange="updateProgress()">
+                            <label for="auth-1">Login page loads correctly and displays username/password fields</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="auth-2" onchange="updateProgress()">
+                            <label for="auth-2">Can log in with valid credentials</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="auth-3" onchange="updateProgress()">
+                            <label for="auth-3">Invalid credentials show appropriate error message</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="auth-4" onchange="updateProgress()">
+                            <label for="auth-4">After login, redirects to role-specific dashboard (Teacher dashboard)</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="auth-5" onchange="updateProgress()">
+                            <label for="auth-5">Session persists after page refresh</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="auth-6" onchange="updateProgress()">
+                            <label for="auth-6">Logout button works and redirects to login page</label>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-group">
+                        <h3>🧭 Navigation & Layout</h3>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="nav-1" onchange="updateProgress()">
+                            <label for="nav-1">Navigation bar displays at the top of all pages</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="nav-2" onchange="updateProgress()">
+                            <label for="nav-2">Navigation shows correct menu items for Teacher role (Dashboard, Students, Assignments, Timeline, Calendar, Resources)</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="nav-3" onchange="updateProgress()">
+                            <label for="nav-3">Active page is highlighted in navigation</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="nav-4" onchange="updateProgress()">
+                            <label for="nav-4">Username and role badge display correctly in navigation</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="nav-5" onchange="updateProgress()">
+                            <label for="nav-5">Mobile menu works (hamburger icon on small screens)</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="nav-6" onchange="updateProgress()">
+                            <label for="nav-6">All navigation links work and navigate to correct pages</label>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-group">
+                        <h3>🎨 UI Framework & Responsiveness</h3>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="ui-1" onchange="updateProgress()">
+                            <label for="ui-1">Layout is consistent across all pages</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="ui-2" onchange="updateProgress()">
+                            <label for="ui-2">Dark mode toggle works (if implemented)</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="ui-3" onchange="updateProgress()">
+                            <label for="ui-3">Page is responsive on mobile devices (test by resizing browser)</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="ui-4" onchange="updateProgress()">
+                            <label for="ui-4">Text is readable and properly sized</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="ui-5" onchange="updateProgress()">
+                            <label for="ui-5">Colors and contrast meet accessibility standards</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="ui-6" onchange="updateProgress()">
+                            <label for="ui-6">Loading states display appropriately (spinners, skeletons)</label>
+                        </div>
+                    </div>
+                    
+                    <div class="notes-section">
+                        <strong>Epic 1 Notes:</strong>
+                        <textarea id="epic1-notes" placeholder="Add any issues or observations about authentication, navigation, or UI framework..." onchange="saveNotes()"></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Epic 2: User & Resource Management -->
+            <div class="epic-section">
+                <div class="epic-header" onclick="toggleEpic('epic2')">
+                    <h2>
+                        <span class="epic-number">2</span>
+                        Epic 2: User & Resource Management
+                        <span class="epic-progress" id="epic2-progress">(0/0)</span>
+                    </h2>
+                    <span class="toggle-icon" id="epic2-icon">▼</span>
+                </div>
+                <div class="epic-content" id="epic2-content">
+                    <div class="feature-group">
+                        <h3>📊 Teacher Dashboard</h3>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="dashboard-1" onchange="updateProgress()">
+                            <label for="dashboard-1">Dashboard page loads without errors</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="dashboard-2" onchange="updateProgress()">
+                            <label for="dashboard-2">Dashboard displays page title and description</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="dashboard-3" onchange="updateProgress()">
+                            <label for="dashboard-3">Dashboard shows cards for Students, Assignments, and Resources</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="dashboard-4" onchange="updateProgress()">
+                            <label for="dashboard-4">Cards are clickable or have clear navigation to respective pages</label>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-group">
+                        <h3>👥 Students Management</h3>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="students-1" onchange="updateProgress()">
+                            <label for="students-1">Students page loads and displays list of students</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="students-2" onchange="updateProgress()">
+                            <label for="students-2">Can create a new student (form opens/clicks work)</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="students-3" onchange="updateProgress()">
+                            <label for="students-3">Student creation form has all required fields (name, username, password, etc.)</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="students-4" onchange="updateProgress()">
+                            <label for="students-4">Form validation works (shows errors for missing/invalid fields)</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="students-5" onchange="updateProgress()">
+                            <label for="students-5">Can successfully create a new student</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="students-6" onchange="updateProgress()">
+                            <label for="students-6">New student appears in the list after creation</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="students-7" onchange="updateProgress()">
+                            <label for="students-7">Can click on a student to view/edit details</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="students-8" onchange="updateProgress()">
+                            <label for="students-8">Student detail page displays all student information</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="students-9" onchange="updateProgress()">
+                            <label for="students-9">Can edit student information</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="students-10" onchange="updateProgress()">
+                            <label for="students-10">Can assign parent to student (if implemented)</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="students-11" onchange="updateProgress()">
+                            <label for="students-11">Student list is readable and well-formatted</label>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-group">
+                        <h3>📚 Resources Management</h3>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="resources-1" onchange="updateProgress()">
+                            <label for="resources-1">Resources page loads correctly</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="resources-2" onchange="updateProgress()">
+                            <label for="resources-2">Can view existing lessons, topics, and resources</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="resources-3" onchange="updateProgress()">
+                            <label for="resources-3">Can create a new lesson</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="resources-4" onchange="updateProgress()">
+                            <label for="resources-4">Can create a new topic under a lesson</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="resources-5" onchange="updateProgress()">
+                            <label for="resources-5">Can create a new resource and assign it to a topic</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="resources-6" onchange="updateProgress()">
+                            <label for="resources-6">Can specify question count per resource/topic</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="resources-7" onchange="updateProgress()">
+                            <label for="resources-7">Pre-built resource library is accessible (if populated)</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="resources-8" onchange="updateProgress()">
+                            <label for="resources-8">Resource hierarchy is clear (Lesson → Topic → Resource)</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="resources-9" onchange="updateProgress()">
+                            <label for="resources-9">Can edit existing resources</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="resources-10" onchange="updateProgress()">
+                            <label for="resources-10">Resource forms have proper validation</label>
+                        </div>
+                    </div>
+                    
+                    <div class="notes-section">
+                        <strong>Epic 2 Notes:</strong>
+                        <textarea id="epic2-notes" placeholder="Add any issues or observations about students, resources, or dashboard..." onchange="saveNotes()"></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Epic 3: Timeline & Assignment System -->
+            <div class="epic-section">
+                <div class="epic-header" onclick="toggleEpic('epic3')">
+                    <h2>
+                        <span class="epic-number">3</span>
+                        Epic 3: Timeline & Assignment System
+                        <span class="epic-progress" id="epic3-progress">(0/0)</span>
+                    </h2>
+                    <span class="toggle-icon" id="epic3-icon">▼</span>
+                </div>
+                <div class="epic-content" id="epic3-content">
+                    <div class="feature-group">
+                        <h3>📝 Assignments Page</h3>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="assignments-1" onchange="updateProgress()">
+                            <label for="assignments-1">Assignments page loads correctly</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="assignments-2" onchange="updateProgress()">
+                            <label for="assignments-2">Can view list of all assignments</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="assignments-3" onchange="updateProgress()">
+                            <label for="assignments-3">Can toggle between "All Assignments" and "Past Assignments" views</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="assignments-4" onchange="updateProgress()">
+                            <label for="assignments-4">Assignment list displays relevant information (student, topic, dates, question count)</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="assignments-5" onchange="updateProgress()">
+                            <label for="assignments-5">Can click on an assignment to view/edit details</label>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-group">
+                        <h3>➕ Assignment Creation Form</h3>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="assign-form-1" onchange="updateProgress()">
+                            <label for="assign-form-1">Can open assignment creation form</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="assign-form-2" onchange="updateProgress()">
+                            <label for="assign-form-2">Form has student dropdown/selector</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="assign-form-3" onchange="updateProgress()">
+                            <label for="assign-form-3">Form has topic/resource selector</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="assign-form-4" onchange="updateProgress()">
+                            <label for="assign-form-4">Can set start date and time</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="assign-form-5" onchange="updateProgress()">
+                            <label for="assign-form-5">Can set question count</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="assign-form-6" onchange="updateProgress()">
+                            <label for="assign-form-6">Can set daily target (defaults to 100)</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="assign-form-7" onchange="updateProgress()">
+                            <label for="assign-form-7">End date is automatically calculated based on question count and daily target</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="assign-form-8" onchange="updateProgress()">
+                            <label for="assign-form-8">Can toggle "Exam Mode" checkbox</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="assign-form-9" onchange="updateProgress()">
+                            <label for="assign-form-9">Form validation works (shows errors for missing fields)</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="assign-form-10" onchange="updateProgress()">
+                            <label for="assign-form-10">Can successfully create an assignment</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="assign-form-11" onchange="updateProgress()">
+                            <label for="assign-form-11">Can edit an existing assignment</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="assign-form-12" onchange="updateProgress()">
+                            <label for="assign-form-12">Past assignments show as read-only or have restrictions</label>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-group">
+                        <h3>📅 Timeline View (Jira/Notion-Style)</h3>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="timeline-1" onchange="updateProgress()">
+                            <label for="timeline-1">Timeline page loads correctly</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="timeline-2" onchange="updateProgress()">
+                            <label for="timeline-2">Assignments display as horizontal bars over time</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="timeline-3" onchange="updateProgress()">
+                            <label for="timeline-3">Multiple students' assignments are visible simultaneously</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="timeline-4" onchange="updateProgress()">
+                            <label for="timeline-4">Timeline is scrollable horizontally and vertically</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="timeline-5" onchange="updateProgress()">
+                            <label for="timeline-5">Can zoom in/out or change view scale (if implemented)</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="timeline-6" onchange="updateProgress()">
+                            <label for="timeline-6">Assignment bars show correct start and end dates</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="timeline-7" onchange="updateProgress()">
+                            <label for="timeline-7">Can drag and drop assignments to adjust dates</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="timeline-8" onchange="updateProgress()">
+                            <label for="timeline-8">Dragging an assignment updates its dates correctly</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="timeline-9" onchange="updateProgress()">
+                            <label for="timeline-9">Can resize assignment bars to extend/shorten duration</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="timeline-10" onchange="updateProgress()">
+                            <label for="timeline-10">Timeline displays date headers/axis clearly</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="timeline-11" onchange="updateProgress()">
+                            <label for="timeline-11">Can click on assignment bars to view/edit details</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="timeline-12" onchange="updateProgress()">
+                            <label for="timeline-12">Timeline updates in real-time after creating/editing assignments</label>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-group">
+                        <h3>📆 Calendar View (Google Calendar-Style)</h3>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="calendar-1" onchange="updateProgress()">
+                            <label for="calendar-1">Calendar page loads correctly</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="calendar-2" onchange="updateProgress()">
+                            <label for="calendar-2">Assignments display in calendar format</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="calendar-3" onchange="updateProgress()">
+                            <label for="calendar-3">Can navigate between months/weeks</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="calendar-4" onchange="updateProgress()">
+                            <label for="calendar-4">Weekly view expands to show daily details</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="calendar-5" onchange="updateProgress()">
+                            <label for="calendar-5">Daily details show assignment information clearly</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="calendar-6" onchange="updateProgress()">
+                            <label for="calendar-6">Can click on calendar items to view/edit assignments</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="calendar-7" onchange="updateProgress()">
+                            <label for="calendar-7">Calendar highlights current date</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="calendar-8" onchange="updateProgress()">
+                            <label for="calendar-8">Multiple assignments on same day are displayed properly</label>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-group">
+                        <h3>🎯 Exam Mode & Past Assignments</h3>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="exam-1" onchange="updateProgress()">
+                            <label for="exam-1">Can enable "Exam Mode" when creating/editing assignment</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="exam-2" onchange="updateProgress()">
+                            <label for="exam-2">Exam Mode assignments have fixed deadlines (cannot be adjusted)</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="exam-3" onchange="updateProgress()">
+                            <label for="exam-3">Exam Mode assignments cannot be dragged/adjusted in timeline</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="exam-4" onchange="updateProgress()">
+                            <label for="exam-4">Past assignments are accessible for viewing</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="exam-5" onchange="updateProgress()">
+                            <label for="exam-5">Can access past topics for question adjustments (if implemented)</label>
+                        </div>
+                        <div class="checklist-item">
+                            <input type="checkbox" id="exam-6" onchange="updateProgress()">
+                            <label for="exam-6">Past assignments are clearly distinguished from current ones</label>
+                        </div>
+                    </div>
+                    
+                    <div class="notes-section">
+                        <strong>Epic 3 Notes:</strong>
+                        <textarea id="epic3-notes" placeholder="Add any issues or observations about assignments, timeline, calendar, or exam mode..." onchange="saveNotes()"></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="summary" style="margin-top: 30px;">
+                <h2>📝 General Observations</h2>
+                <div class="notes-section" style="background: white; border-left-color: #3b82f6;">
+                    <textarea id="general-notes" placeholder="Add any general observations about performance, bugs, UX issues, or suggestions..." style="min-height: 120px;" onchange="saveNotes()"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Load saved state from localStorage
+        function loadState() {
+            const saved = localStorage.getItem('ux-checklist-state');
+            if (saved) {
+                const state = JSON.parse(saved);
+                
+                // Restore checkboxes
+                Object.keys(state.checkboxes || {}).forEach(id => {
+                    const checkbox = document.getElementById(id);
+                    if (checkbox) {
+                        checkbox.checked = state.checkboxes[id];
+                    }
+                });
+                
+                // Restore notes
+                Object.keys(state.notes || {}).forEach(id => {
+                    const textarea = document.getElementById(id);
+                    if (textarea) {
+                        textarea.value = state.notes[id];
+                    }
+                });
+                
+                // Restore expanded sections
+                state.expanded?.forEach(id => {
+                    toggleEpic(id, false);
+                });
+            }
+            
+            updateProgress();
+        }
+        
+        // Save state to localStorage
+        function saveState() {
+            const checkboxes = {};
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                checkboxes[cb.id] = cb.checked;
+            });
+            
+            const notes = {};
+            document.querySelectorAll('textarea').forEach(ta => {
+                notes[ta.id] = ta.value;
+            });
+            
+            const expanded = [];
+            document.querySelectorAll('.epic-content.expanded').forEach(content => {
+                const epicId = content.id.replace('-content', '');
+                expanded.push(epicId);
+            });
+            
+            localStorage.setItem('ux-checklist-state', JSON.stringify({
+                checkboxes,
+                notes,
+                expanded
+            }));
+        }
+        
+        function saveNotes() {
+            saveState();
+        }
+        
+        function toggleEpic(epicId, animate = true) {
+            const content = document.getElementById(epicId + '-content');
+            const icon = document.getElementById(epicId + '-icon');
+            
+            if (content.classList.contains('expanded')) {
+                if (animate) {
+                    content.style.display = 'none';
+                }
+                content.classList.remove('expanded');
+                icon.textContent = '▼';
+            } else {
+                content.classList.add('expanded');
+                if (animate) {
+                    content.style.display = 'block';
+                }
+                icon.textContent = '▲';
+            }
+            
+            saveState();
+            updateProgress();
+        }
+        
+        function updateProgress() {
+            // Count total and completed items
+            const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+            let total = 0;
+            let completed = 0;
+            
+            allCheckboxes.forEach(cb => {
+                total++;
+                if (cb.checked) {
+                    completed++;
+                    const item = cb.closest('.checklist-item');
+                    if (item) {
+                        item.classList.add('completed');
+                    }
+                } else {
+                    const item = cb.closest('.checklist-item');
+                    if (item) {
+                        item.classList.remove('completed');
+                    }
+                }
+            });
+            
+            // Update overall progress
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+            document.getElementById('overall-progress').style.width = percentage + '%';
+            document.getElementById('overall-progress').textContent = percentage + '%';
+            
+            document.getElementById('total-items').textContent = total;
+            document.getElementById('completed-items').textContent = completed;
+            document.getElementById('remaining-items').textContent = total - completed;
+            
+            // Update epic-specific progress
+            ['epic1', 'epic2', 'epic3'].forEach(epicId => {
+                const epicContent = document.getElementById(epicId + '-content');
+                if (epicContent) {
+                    const epicCheckboxes = epicContent.querySelectorAll('input[type="checkbox"]');
+                    let epicTotal = 0;
+                    let epicCompleted = 0;
+                    
+                    epicCheckboxes.forEach(cb => {
+                        epicTotal++;
+                        if (cb.checked) epicCompleted++;
+                    });
+                    
+                    const progressEl = document.getElementById(epicId + '-progress');
+                    if (progressEl) {
+                        progressEl.textContent = `(${epicCompleted}/${epicTotal})`;
+                    }
+                }
+            });
+            
+            saveState();
+        }
+        
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadState();
+        });
+        
+        // Auto-save on checkbox change
+        document.addEventListener('change', (e) => {
+            if (e.target.type === 'checkbox') {
+                updateProgress();
+            }
+        });
+    </script>
+</body>
+</html>

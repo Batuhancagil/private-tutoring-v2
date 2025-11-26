@@ -1,0 +1,160 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>10</epicId>
+    <storyId>10-5</storyId>
+    <title>Data Privacy Enhancements</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/10-5-data-privacy-enhancements.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>system</asA>
+    <iWant>to ensure complete data privacy</iWant>
+    <soThat>student data is protected</soThat>
+    <tasks>
+      <task>Implement parental consent workflow (COPPA compliance)</task>
+      <task>Add consent fields to Student model (parentalConsentGiven, consentDate, consentMethod)</task>
+      <task>Create consent form/UI for parents</task>
+      <task>Require consent for students under 13 (COPPA)</task>
+      <task>Implement data export functionality per tenant (GDPR)</task>
+      <task>Ensure data encryption (at rest and in transit)</task>
+      <task>Review and document data privacy practices</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>the system is deployed</given>
+      <when>data is handled</when>
+      <then>it: Requires parental consent for student accounts (COPPA), Allows student privacy controls, Supports data export per tenant (GDPR), Encrypts data properly, Maintains data isolation</then>
+    </criterion>
+    <criterion id="AC2">
+      <given>a student account is created</given>
+      <when>the account is set up</when>
+      <then>parental consent is required (if student is under 13)</then>
+      <and>consent is recorded</and>
+      <and>consent status is tracked</and>
+    </criterion>
+    <criterion id="AC3">
+      <given>a tenant requests data export</given>
+      <when>data export is requested</when>
+      <then>all tenant data is exported</then>
+      <and>data is in a standard format (JSON/CSV)</and>
+      <and>export includes all student data, progress logs, assignments, etc.</and>
+    </criterion>
+    <criterion id="AC4">
+      <given>data is stored or transmitted</given>
+      <when>data is handled</when>
+      <then>it is encrypted: Data at rest is encrypted (database encryption), Data in transit is encrypted (HTTPS/TLS), Sensitive data is properly protected</then>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 10: Mobile Optimization &amp; Polish - Story 10.5</section>
+        <snippet>As a system, I want to ensure complete data privacy, So that student data is protected. Parental consent workflow (COPPA), data export per tenant (GDPR), data encryption.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Data Privacy</section>
+        <snippet>COPPA compliance required for students under 13. GDPR compliance for data export. Data encryption at rest and in transit.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>User</symbol>
+        <lines>20-42</lines>
+        <reason>User model. Add consent fields (parentalConsentGiven, consentDate, consentMethod) for COPPA compliance.</reason>
+      </artifact>
+      <artifact>
+        <path>app/api/admin/data-export/route.ts</path>
+        <kind>API route</kind>
+        <symbol>GETHandler</symbol>
+        <lines>1-100</lines>
+        <reason>Data export API endpoint (to be created). Export all tenant data in JSON/CSV format for GDPR compliance.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="@prisma/client" version="^5.19.0" />
+        <package name="prisma" version="^5.19.0" />
+        <package name="zod" version="^3.23.8" />
+        <package name="typescript" version="^5.5.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>COPPA compliance: Require parental consent for students under 13, record consent, track consent status</constraint>
+    <constraint>GDPR compliance: Support data export per tenant, export all tenant data in standard format (JSON/CSV)</constraint>
+    <constraint>Data encryption: Encrypt data at rest (database encryption) and in transit (HTTPS/TLS)</constraint>
+    <constraint>Data isolation: Maintain tenant data isolation, ensure proper access controls</constraint>
+    <constraint>Privacy controls: Allow student privacy controls where appropriate</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>GET /api/admin/data-export</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/admin/data-export?tenantId=string&amp;format=json|csv
+Response (200): {
+  data: {
+    students: Student[],
+    progressLogs: ProgressLog[],
+    assignments: Assignment[],
+    ...
+  },
+  format: 'json' | 'csv',
+  exportedAt: Date
+}
+Response (403): { error: "Access denied" }</signature>
+      <path>app/api/admin/data-export/route.ts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Consent workflow tests, data export tests, encryption verification tests, privacy control tests.
+      Focus on COPPA compliance, GDPR compliance, data encryption, and privacy controls.
+      Test edge cases: consent for students under 13, data export completeness, encryption verification, privacy controls.
+      Manual testing for consent workflow and data export.
+    </standards>
+    <locations>
+      Consent tests: Test parental consent workflow for students under 13
+      Data export tests: Test data export functionality and completeness
+      Encryption tests: Verify data encryption at rest and in transit
+      Privacy control tests: Test student privacy controls
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test data privacy compliance</description>
+        <steps>1. Verify requires parental consent for student accounts (COPPA). 2. Verify allows student privacy controls. 3. Verify supports data export per tenant (GDPR). 4. Verify encrypts data properly. 5. Verify maintains data isolation.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test parental consent</description>
+        <steps>1. Create student account under 13. 2. Verify parental consent required. 3. Record consent. 4. Verify consent status tracked.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test data export</description>
+        <steps>1. Request data export for tenant. 2. Verify all tenant data exported. 3. Verify data in standard format (JSON/CSV). 4. Verify export includes all student data, progress logs, assignments, etc.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test data encryption</description>
+        <steps>1. Verify data at rest encrypted (database encryption). 2. Verify data in transit encrypted (HTTPS/TLS). 3. Verify sensitive data properly protected.</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

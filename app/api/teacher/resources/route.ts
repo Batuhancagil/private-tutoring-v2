@@ -26,6 +26,7 @@ async function GETHandler(request: NextRequest, user: any) {
   try {
     // Get scope filter from query params (default: 'all')
     const scope = request.nextUrl.searchParams.get('scope') || 'all';
+    const topicId = request.nextUrl.searchParams.get('topicId');
 
     // Build lesson filter based on scope
     let lessonFilter: { teacherId?: string | null } | { OR: Array<{ teacherId: string | null }> } =
@@ -47,13 +48,21 @@ async function GETHandler(request: NextRequest, user: any) {
       };
     }
 
+    // Build where clause
+    const where: any = {
+      topic: {
+        lesson: lessonFilter,
+      },
+    };
+
+    // Add topicId filter if provided
+    if (topicId) {
+      where.topicId = topicId;
+    }
+
     // Fetch all resources where topic's lesson belongs to current teacher (or is global)
     const resources = await prisma.resource.findMany({
-      where: {
-        topic: {
-          lesson: lessonFilter,
-        },
-      },
+      where,
       select: {
         id: true,
         name: true,

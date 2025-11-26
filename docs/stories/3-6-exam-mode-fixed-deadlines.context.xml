@@ -1,0 +1,230 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>3</epicId>
+    <storyId>3-6</storyId>
+    <title>Exam Mode (Fixed Deadlines)</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/epics.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Teacher</asA>
+    <iWant>to enable Exam Mode for assignments</iWant>
+    <soThat>timeline adjustments are disabled for strict deadlines</soThat>
+    <tasks>
+      <task>Add exam mode flag to Assignment model (already exists in schema)</task>
+      <task>Implement exam mode toggle UI in AssignmentForm (already implemented)</task>
+      <task>Disable drag-and-drop for exam mode assignments in TimelineView (already implemented)</task>
+      <task>Add visual indicator (lock icon) for exam mode assignments (already implemented)</task>
+      <task>Add API validation to prevent date changes for exam mode assignments (already implemented)</task>
+      <task>Verify all acceptance criteria are met</task>
+      <task>Test exam mode toggle functionality</task>
+      <task>Test drag prevention for exam mode assignments</task>
+      <task>Test API validation for exam mode date changes</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>I have an assignment</given>
+      <when>I enable Exam Mode</when>
+      <then>the assignment dates are locked</then>
+    </criterion>
+    <criterion id="AC2">
+      <given>I have an assignment with Exam Mode enabled</given>
+      <when>I try to drag the assignment on the timeline</when>
+      <then>drag-and-drop is disabled for this assignment</then>
+    </criterion>
+    <criterion id="AC3">
+      <given>I have an assignment with Exam Mode enabled</given>
+      <when>I view the timeline</when>
+      <then>the assignment shows an exam mode indicator</then>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 3: Timeline &amp; Assignment System - Story 3.6</section>
+        <snippet>As a Teacher, I want to enable Exam Mode for assignments, So that timeline adjustments are disabled for strict deadlines. Technical Notes include exam mode flag, timeline interaction disabling, visual indicator, toggle UI, and validation.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR-004: Timeline/Calendar Assignment System - FR-004.7</section>
+        <snippet>FR-004.7: The system shall support "Exam Mode" where timeline adjustments are disabled for strict deadlines. Acceptance criteria includes exam mode locks timeline for specific assignments.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>System Architecture Alignment</section>
+        <snippet>Defines the technical stack: Next.js 14, TypeScript, Prisma ORM, PostgreSQL. Multi-tenant architecture with teacherId isolation. API pattern using Next.js Route Handlers.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design Specification</title>
+        <section>Visual Foundation - Color System</section>
+        <snippet>Defines color system with Trust Blue theme. Primary color #3b82f6, success/warning/error colors for status indicators. Visual design patterns for timeline interactions.</snippet>
+      </doc>
+      <doc>
+        <path>docs/bmm-brainstorming-session-2025-11-13.md</path>
+        <title>Brainstorming Session</title>
+        <section>Phase 3: Assumption Reversal</section>
+        <snippet>Discusses adaptive vs fixed timeline modes. Exam prep needs fixed deadlines (time pressure). System detects "exam mode" vs "regular learning mode". Exam mode: fixed timeline, strict deadlines.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>Assignment.examMode</symbol>
+        <lines>107</lines>
+        <reason>Exam mode boolean field already exists in Assignment model with default false</reason>
+      </artifact>
+      <artifact>
+        <path>components/teacher/AssignmentForm.tsx</path>
+        <kind>component</kind>
+        <symbol>AssignmentForm</symbol>
+        <lines>372-383</lines>
+        <reason>Exam mode checkbox UI already implemented in assignment creation/edit form</reason>
+      </artifact>
+      <artifact>
+        <path>components/teacher/TimelineView.tsx</path>
+        <kind>component</kind>
+        <symbol>TimelineView</symbol>
+        <lines>151-180, 325-395</lines>
+        <reason>Drag prevention for exam mode assignments and visual lock icon indicator already implemented</reason>
+      </artifact>
+      <artifact>
+        <path>app/api/teacher/assignments/route.ts</path>
+        <kind>API route</kind>
+        <symbol>POSTHandler</symbol>
+        <lines>17, 235</lines>
+        <reason>Exam mode field included in assignment creation schema and API handler</reason>
+      </artifact>
+      <artifact>
+        <path>app/api/teacher/assignments/[id]/route.ts</path>
+        <kind>API route</kind>
+        <symbol>PUTHandler</symbol>
+        <lines>16, 177-180, 191-206</lines>
+        <reason>API validation prevents date changes for exam mode assignments. Exam mode toggle update supported.</reason>
+      </artifact>
+      <artifact>
+        <path>lib/timeline-helpers.ts</path>
+        <kind>utility</kind>
+        <symbol>validateDragPosition</symbol>
+        <lines>67-120</lines>
+        <reason>Drag validation helper function (does not currently check exam mode - handled in TimelineView component)</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="@prisma/client" version="^5.19.0" />
+        <package name="prisma" version="^5.19.0" />
+        <package name="zod" version="^3.23.8" />
+        <package name="typescript" version="^5.5.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Multi-tenant isolation: All assignments must be scoped to current teacher's students via teacherId</constraint>
+    <constraint>Type safety: Use TypeScript types from Prisma schema for Assignment model</constraint>
+    <constraint>API validation: Use Zod schemas for request validation (createAssignmentSchema, updateAssignmentSchema)</constraint>
+    <constraint>Error handling: Use logApiError and trackPerformance utilities for API error logging</constraint>
+    <constraint>UI consistency: Follow existing Tailwind CSS patterns and component structure from AssignmentForm and TimelineView</constraint>
+    <constraint>Accessibility: Exam mode assignments should have appropriate ARIA labels and keyboard navigation disabled</constraint>
+    <constraint>Backend validation: API must enforce exam mode restrictions server-side, not just client-side</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>POST /api/teacher/assignments</name>
+      <kind>REST endpoint</kind>
+      <signature>POST /api/teacher/assignments
+Body: { studentId: string, topicId: string, resourceId?: string, startDate: string (ISO 8601), questionCount: number, dailyTarget: number, examMode: boolean }
+Response: { success: boolean, data: Assignment }</signature>
+      <path>app/api/teacher/assignments/route.ts</path>
+    </interface>
+    <interface>
+      <name>PUT /api/teacher/assignments/[id]</name>
+      <kind>REST endpoint</kind>
+      <signature>PUT /api/teacher/assignments/[id]
+Body: { startDate?: string, endDate?: string, questionCount?: number, dailyTarget?: number, resourceId?: string | null, examMode?: boolean }
+Response: { success: boolean, data: Assignment }
+Error: 400 if trying to change dates for exam mode assignment</signature>
+      <path>app/api/teacher/assignments/[id]/route.ts</path>
+    </interface>
+    <interface>
+      <name>AssignmentForm Component</name>
+      <kind>React component</kind>
+      <signature>AssignmentForm({ assignment?: Assignment, onSuccess: () =&gt; void, onCancel: () =&gt; void })
+Props include examMode boolean state managed via checkbox input</signature>
+      <path>components/teacher/AssignmentForm.tsx</path>
+    </interface>
+    <interface>
+      <name>TimelineView Component</name>
+      <kind>React component</kind>
+      <signature>TimelineView({ items: TimelineItem[], dateRange, viewType, onViewTypeChange?, onDateRangeChange?, onAssignmentClick?, onAssignmentUpdate? })
+Handles drag-and-drop with exam mode check in handleDragStart callback</signature>
+      <path>components/teacher/TimelineView.tsx</path>
+    </interface>
+    <interface>
+      <name>Assignment Model (Prisma)</name>
+      <kind>Database model</kind>
+      <signature>model Assignment {
+  id: String @id @default(cuid())
+  examMode: Boolean @default(false)
+  // ... other fields
+}</signature>
+      <path>prisma/schema.prisma</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Manual testing for UI interactions, API endpoint testing via Postman/curl or browser dev tools. 
+      No formal test framework currently configured. Focus on acceptance criteria validation through manual testing.
+      Test exam mode toggle, drag prevention, visual indicators, and API validation.
+    </standards>
+    <locations>
+      Manual testing: Browser-based testing for UI components
+      API testing: Use browser dev tools Network tab or Postman for endpoint validation
+      No dedicated test directories found in project structure
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test exam mode toggle in AssignmentForm</description>
+        <steps>1. Open assignment creation form. 2. Check "Exam Mode" checkbox. 3. Submit form. 4. Verify assignment created with examMode=true. 5. Edit assignment. 6. Verify exam mode checkbox reflects current state.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test drag prevention for exam mode assignments</description>
+        <steps>1. Create assignment with exam mode enabled. 2. View timeline. 3. Attempt to drag exam mode assignment bar. 4. Verify drag does not start (handleDragStart returns early). 5. Verify cursor shows "not-allowed" on hover.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test visual indicator for exam mode</description>
+        <steps>1. Create assignment with exam mode enabled. 2. View timeline. 3. Verify lock icon (🔒) appears on assignment bar. 4. Verify assignment bar has reduced opacity (0.6). 5. Verify ARIA label includes "Exam Mode - Dates locked".</steps>
+      </test>
+      <test id="API1">
+        <description>Test API prevents date changes for exam mode</description>
+        <steps>1. Create assignment with exam mode enabled via API. 2. Attempt PUT request to change startDate or endDate. 3. Verify API returns 400 error: "Cannot change dates for exam mode assignment". 4. Verify assignment dates remain unchanged.</steps>
+      </test>
+      <test id="API2">
+        <description>Test exam mode toggle via API</description>
+        <steps>1. Create assignment without exam mode. 2. PUT request to set examMode=true. 3. Verify assignment updated successfully. 4. PUT request to set examMode=false. 5. Verify assignment updated successfully.</steps>
+      </test>
+      <test id="INT1">
+        <description>Test exam mode with other assignment features</description>
+        <steps>1. Create exam mode assignment. 2. Verify question count and daily target can still be modified (if needed). 3. Verify resource assignment can still be changed. 4. Verify only dates are locked, not other fields.</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

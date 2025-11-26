@@ -1,0 +1,173 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>7</epicId>
+    <storyId>7-2</storyId>
+    <title>Historical Data Access</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/7-2-historical-data-access.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Parent</asA>
+    <iWant>to view historical progress data</iWant>
+    <soThat>I can see trends over time</soThat>
+    <tasks>
+      <task>Extend parent progress API with date range support (startDate, endDate query params)</task>
+      <task>Filter ProgressLog entries by date range</task>
+      <task>Support common ranges: last 7 days, last 30 days, last 3 months, custom range</task>
+      <task>Create date range selector component</task>
+      <task>Update ProgressGraphs component to use date range</task>
+      <task>Optimize queries for large date ranges</task>
+      <task>Ensure performance: queries complete in &lt; 2s</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>I am viewing progress</given>
+      <when>I select a date range</when>
+      <then>I see: Historical progress data, Past weeks/months, Trend analysis, Comparison over time</then>
+    </criterion>
+    <criterion id="AC2">
+      <given>I want to see long-term trends</given>
+      <when>I select a date range (e.g., last 3 months)</when>
+      <then>graphs update to show data for that range</then>
+      <and>trend lines are clearly visible</and>
+      <and>data loads within 2 seconds</and>
+    </criterion>
+    <criterion id="AC3">
+      <given>I want to compare periods</given>
+      <when>I select different date ranges</when>
+      <then>I can see: Week-over-week comparison, Month-over-month comparison, Overall trend direction (improving/declining)</then>
+    </criterion>
+    <criterion id="AC4">
+      <given>I select a date range with no data</given>
+      <when>I view historical data</when>
+      <then>I see a message indicating no data for that period</then>
+      <and>graphs show empty state</and>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 7: Parent Portal - Story 7.2</section>
+        <snippet>As a Parent, I want to view historical progress data, So that I can see trends over time. Date range selector, historical data queries, trend calculation, data display.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR-008: Parent Portal</section>
+        <snippet>FR-008.2: Parents shall be able to view historical progress data with date range selection. Support common ranges and custom ranges for trend analysis.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/7-1-parent-dashboard-progress-graphs.md</path>
+        <title>Story 7.1: Parent Dashboard &amp; Progress Graphs</title>
+        <section>Learnings</section>
+        <snippet>Parent progress API endpoint established. ProgressGraphs component created. Data aggregation patterns established.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>app/api/parent/progress/route.ts</path>
+        <kind>API route</kind>
+        <symbol>GETHandler</symbol>
+        <lines>1-100</lines>
+        <reason>Parent progress API endpoint. Extend to accept date range query params (startDate, endDate) and filter ProgressLog entries by date range.</reason>
+      </artifact>
+      <artifact>
+        <path>components/parent/ProgressGraphs.tsx</path>
+        <kind>component</kind>
+        <symbol>ProgressGraphs</symbol>
+        <lines>1-150</lines>
+        <reason>Progress graphs component. Add date range selector and update graphs to use selected date range.</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>ProgressLog</symbol>
+        <lines>121-140</lines>
+        <reason>ProgressLog model with date field indexed. Use date index for efficient date range queries.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="@prisma/client" version="^5.19.0" />
+        <package name="prisma" version="^5.19.0" />
+        <package name="zod" version="^3.23.8" />
+        <package name="typescript" version="^5.5.0" />
+        <package name="recharts" version="^2.10.0" />
+        <package name="date-fns" version="^4.1.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Date range support: Support common ranges (last 7 days, 30 days, 3 months) and custom ranges</constraint>
+    <constraint>Performance: Queries must complete in &lt; 2 seconds even for large date ranges</constraint>
+    <constraint>Database optimization: Use indexed queries on ProgressLog.date for efficient date range filtering</constraint>
+    <constraint>Pagination: Consider pagination for very large date ranges if needed</constraint>
+    <constraint>Date validation: Validate startDate and endDate, ensure startDate &lt;= endDate</constraint>
+    <constraint>Component pattern: Follow existing component patterns from components/parent/ - use TypeScript, Tailwind CSS, proper prop types</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>GET /api/parent/progress (with date range)</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/parent/progress?childId=string&amp;startDate=YYYY-MM-DD&amp;endDate=YYYY-MM-DD
+Response (200): {
+  childId: string,
+  graphs: {
+    questionCounts: [{ date: string, total: number }],
+    accuracy: [{ date: string, accuracy: number }]
+  },
+  dateRange: { startDate: string, endDate: string }
+}
+Response (400): { error: "Invalid date range" }
+Response (403): { error: "Access denied" }</signature>
+      <path>app/api/parent/progress/route.ts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Integration tests for API endpoint with date ranges, component tests for date range selector, performance tests for large ranges.
+      Focus on date range filtering correctness, performance requirements (&lt; 2s), and trend analysis accuracy.
+      Test edge cases: no data in range, very large ranges, invalid date ranges, overlapping ranges.
+      Manual testing for date range selector interactions and graph updates.
+    </standards>
+    <locations>
+      Integration tests: Test API endpoint via browser dev tools Network tab or Postman
+      Component tests: Test date range selector and graph updates
+      Performance tests: Measure query time for large date ranges
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test date range selection</description>
+        <steps>1. Select date range (e.g., last 30 days). 2. Verify historical progress data displays. 3. Verify past weeks/months shown. 4. Verify trend analysis displayed. 5. Verify comparison over time available.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test long-term trends</description>
+        <steps>1. Select date range (e.g., last 3 months). 2. Verify graphs update to show data for that range. 3. Verify trend lines clearly visible. 4. Verify data loads within 2 seconds.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test period comparison</description>
+        <steps>1. Select different date ranges. 2. Verify week-over-week comparison available. 3. Verify month-over-month comparison available. 4. Verify overall trend direction displayed (improving/declining).</steps>
+      </test>
+      <test id="AC4">
+        <description>Test empty state</description>
+        <steps>1. Select date range with no data. 2. Verify message displays indicating no data for that period. 3. Verify graphs show empty state.</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

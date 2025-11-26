@@ -1,0 +1,181 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>4</epicId>
+    <storyId>4-1</storyId>
+    <title>Student Sees Today's Assignment</title>
+    <status>review</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/4-1-student-sees-todays-assignment.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Student</asA>
+    <iWant>to see today's assigned topic and question target</iWant>
+    <soThat>I know what to work on</soThat>
+    <tasks>
+      <task>Create student assignment API endpoint (app/api/student/assignments/route.ts) with GET handler</task>
+      <task>Query today's active assignment (where today falls between startDate and endDate)</task>
+      <task>Calculate progress toward today's target from ProgressLog</task>
+      <task>Create TodaysAssignmentCard component (components/student/TodaysAssignmentCard.tsx)</task>
+      <task>Display topic name, question target, progress indicator</task>
+      <task>Display upcoming assignments list (next 5)</task>
+      <task>Handle loading, error, and empty states</task>
+      <task>Update student dashboard page to use new component</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>I am logged in as a Student</given>
+      <when>I view my dashboard</when>
+      <then>I see: Today's assigned topic, Question target for today, Progress toward today's target, Upcoming assignments</then>
+    </criterion>
+    <criterion id="AC2">
+      <given>I have no assignment for today</given>
+      <when>I view my dashboard</when>
+      <then>I see a message indicating no assignment for today</then>
+    </criterion>
+    <criterion id="AC3">
+      <given>I have multiple assignments</given>
+      <when>I view my dashboard</when>
+      <then>I see today's active assignment (where today falls between startDate and endDate)</then>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 4: Daily Question Logging - Story 4.1</section>
+        <snippet>As a Student, I want to see today's assigned topic and question target, So that I know what to work on. Student dashboard, assignment lookup for current date, question target calculation, progress display.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR-005: Daily Question Logging</section>
+        <snippet>FR-005.1: Students shall see today's assigned topic and question target on their dashboard. Display progress toward daily target and upcoming assignments.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/3-6-exam-mode-fixed-deadlines.md</path>
+        <title>Story 3.6: Exam Mode</title>
+        <section>Learnings</section>
+        <snippet>Assignment API pattern established. Date filtering patterns established. Assignment model includes startDate, endDate, dailyTarget, questionCount fields.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>app/api/student/assignments/route.ts</path>
+        <kind>API route</kind>
+        <symbol>GETHandler</symbol>
+        <lines>1-100</lines>
+        <reason>Student assignments API endpoint. Query today's active assignment and calculate progress. Handle no assignment case.</reason>
+      </artifact>
+      <artifact>
+        <path>components/student/TodaysAssignmentCard.tsx</path>
+        <kind>component</kind>
+        <symbol>TodaysAssignmentCard</symbol>
+        <lines>1-150</lines>
+        <reason>Student dashboard component displaying today's assignment. Shows topic, question target, progress, and upcoming assignments.</reason>
+      </artifact>
+      <artifact>
+        <path>app/student/dashboard/page.tsx</path>
+        <kind>page</kind>
+        <symbol>StudentDashboardPage</symbol>
+        <lines>1-50</lines>
+        <reason>Student dashboard page. Updated to use TodaysAssignmentCard component.</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>Assignment</symbol>
+        <lines>98-119</lines>
+        <reason>Assignment model with startDate, endDate, dailyTarget, questionCount fields. Used to find today's active assignment.</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>ProgressLog</symbol>
+        <lines>121-140</lines>
+        <reason>ProgressLog model with date, rightCount, wrongCount, emptyCount fields. Used to calculate progress toward daily target.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="@prisma/client" version="^5.19.0" />
+        <package name="prisma" version="^5.19.0" />
+        <package name="zod" version="^3.23.8" />
+        <package name="typescript" version="^5.5.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Tenant isolation: Student data is isolated by teacherId - ensure API only returns assignments for current student's teacher</constraint>
+    <constraint>API authorization: Use withRole('STUDENT') helper to ensure only students can access their assignments</constraint>
+    <constraint>Date filtering: Query assignments where current date is between startDate and endDate</constraint>
+    <constraint>Progress calculation: Calculate progress from ProgressLog for today's date: (rightCount + wrongCount + emptyCount) / dailyTarget × 100</constraint>
+    <constraint>Component pattern: Follow existing component patterns from components/student/ - use TypeScript, Tailwind CSS, proper prop types</constraint>
+    <constraint>Error handling: Handle no assignment case gracefully with friendly message</constraint>
+    <constraint>Performance: Dashboard should load quickly, optimize queries with proper indexes</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>GET /api/student/assignments</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/student/assignments
+Response (200): {
+  today: {
+    assignmentId: string,
+    topic: { id: string, name: string },
+    questionCount: number,
+    dailyTarget: number,
+    progress: { logged: number, percentage: number }
+  } | null,
+  upcoming: [
+    {
+      id: string,
+      topic: { id: string, name: string },
+      startDate: string
+    }
+  ]
+}
+Response (403): { error: "Access denied" }</signature>
+      <path>app/api/student/assignments/route.ts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Integration tests for API endpoint, component tests for rendering, performance tests for load time.
+      Focus on assignment lookup correctness, progress calculation accuracy, tenant isolation, and user experience.
+      Test edge cases: no assignment for today, multiple assignments, no progress logged, tenant isolation.
+      Manual testing for visual appearance and mobile responsiveness.
+    </standards>
+    <locations>
+      Integration tests: Test API endpoint via browser dev tools Network tab or Postman
+      Component tests: Test TodaysAssignmentCard component rendering
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test dashboard displays today's assignment</description>
+        <steps>1. Login as student with active assignment. 2. View dashboard. 3. Verify displays today's assigned topic. 4. Verify displays question target. 5. Verify displays progress toward target. 6. Verify displays upcoming assignments.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test no assignment case</description>
+        <steps>1. Login as student with no assignment for today. 2. View dashboard. 3. Verify displays friendly message indicating no assignment for today.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test multiple assignments</description>
+        <steps>1. Login as student with multiple assignments. 2. View dashboard. 3. Verify displays today's active assignment (where today falls between startDate and endDate).</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

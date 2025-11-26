@@ -1,6 +1,8 @@
 import { cookies } from 'next/headers';
 import { verifyToken, JWTPayload } from './auth';
 import { UserRole } from '@prisma/client';
+import { prisma } from './prisma';
+import { isSubscriptionActive } from './subscription-helpers';
 
 /**
  * Get the current authenticated user from the request
@@ -92,6 +94,41 @@ export function requireTenantAccess(
 ): void {
   if (!canAccessTenant(user, targetTeacherId)) {
     throw new Error('Access denied: insufficient tenant permissions');
+  }
+}
+
+/**
+ * Check if user has active subscription (for teachers)
+ * @param user - User payload
+ * @returns true if subscription is active or user doesn't need subscription, false if expired
+ */
+export async function checkSubscriptionAccess(user: JWTPayload): Promise<boolean> {
+  // Superadmin, Students, and Parents don't need subscriptions
+  if (user.role !== 'TEACHER') {
+    return true;
+  }
+
+  // Check if teacher has an active subscription
+  const subscription = await prisma.subscription.findUnique({
+    where: { teacherId: user.userId },
+  });
+
+  if (!subscription) {
+    // No subscription found - deny access
+    return false;
+  }
+
+  return isSubscriptionActive(subscription.startDate, subscription.endDate);
+}
+
+/**
+ * Require active subscription - throws error if subscription is expired
+ */
+export async function requireActiveSubscription(user: JWTPayload): Promise<void> {
+  const hasAccess = await checkSubscriptionAccess(user);
+  
+  if (!hasAccess) {
+    throw new Error('Access denied: subscription expired');
   }
 }
 

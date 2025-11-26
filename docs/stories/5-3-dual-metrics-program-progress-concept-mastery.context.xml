@@ -1,0 +1,245 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>5</epicId>
+    <storyId>5-3</storyId>
+    <title>Dual Metrics (Program Progress + Concept Mastery)</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/5-3-dual-metrics-program-progress-concept-mastery.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>system</asA>
+    <iWant>to calculate both program progress and concept mastery</iWant>
+    <soThat>teachers get comprehensive insights</soThat>
+    <tasks>
+      <task>Add calculateDualMetrics() function to lib/progress-calculator.ts</task>
+      <task>Calculate Program Progress: sum(all solved questions) / sum(all assigned questions) × 100</task>
+      <task>Calculate Concept Mastery: (total right / total attempted) × 100 across all progress logs</task>
+      <task>Query all ProgressLog entries for student</task>
+      <task>Query all Assignment entries for student to get total assigned</task>
+      <task>Create dual metrics API endpoint (GET /api/teacher/progress/student/:studentId/metrics)</task>
+      <task>Create DualMetricsDisplay component for displaying both metrics</task>
+      <task>Implement real-time updates trigger in ProgressLog POST handler</task>
+      <task>Add caching for dual metrics results with cache invalidation</task>
+      <task>Unit tests for calculateDualMetrics() with edge cases</task>
+      <task>Integration tests for API endpoint and real-time trigger</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>student has logged questions</given>
+      <when>metrics are calculated</when>
+      <then>I calculate: Program Progress: Questions solved / Total assigned, Concept Mastery: Accuracy percentage</then>
+      <and>both metrics are displayed together</and>
+      <and>both update in real-time</and>
+    </criterion>
+    <criterion id="AC2">
+      <given>a student has assignments with total questions assigned</given>
+      <when>dual metrics are calculated</when>
+      <then>Program Progress = (total questions solved) / (total questions assigned) × 100</then>
+      <and>Concept Mastery = overall accuracy across all logged questions</and>
+      <and>both metrics are calculated from all student's progress data</and>
+    </criterion>
+    <criterion id="AC3">
+      <given>a student has no assignments or logged questions</given>
+      <when>dual metrics are calculated</when>
+      <then>Program Progress = 0%</then>
+      <and>Concept Mastery = 0% or undefined</and>
+      <and>no error is thrown</and>
+    </criterion>
+    <criterion id="AC4">
+      <given>a student logs new questions or assignments are updated</given>
+      <when>progress data changes</when>
+      <then>dual metrics are automatically recalculated</then>
+      <and>the recalculation completes in &lt; 500ms</and>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/stories/tech-spec-epic-5.md</path>
+        <title>Epic 5 Technical Specification</title>
+        <section>Dual Metrics System</section>
+        <snippet>Calculate both Program Progress (questions solved / total assigned) and Concept Mastery (accuracy percentage) simultaneously. Both metrics update in real-time when students log questions.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 5: Progress Calculation &amp; Visualization - Story 5.3</section>
+        <snippet>As a system, I want to calculate both program progress and concept mastery, So that teachers get comprehensive insights. Program Progress = Questions solved / Total assigned, Concept Mastery = Accuracy percentage.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR-006: Progress Calculation &amp; Visualization</section>
+        <snippet>FR-006.1: The system shall calculate dual metrics: Program Progress (completion) and Concept Mastery (accuracy). FR-006.5: The system shall update progress calculations in real-time as students log work.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Real-time Updates</section>
+        <snippet>Uses Next.js Server Actions with revalidation (no extra infrastructure) for real-time updates. Progress calculations are lightweight and run in-memory (no background job queue needed).</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>lib/progress-calculator.ts</path>
+        <kind>service</kind>
+        <symbol>calculateTopicProgress, calculateLessonProgress</symbol>
+        <lines>1-200</lines>
+        <reason>Existing progress calculation service. Need to extend with calculateDualMetrics() function that aggregates across all student's ProgressLog and Assignment data.</reason>
+      </artifact>
+      <artifact>
+        <path>app/api/teacher/progress/topic/[topicId]/route.ts</path>
+        <kind>API route</kind>
+        <symbol>GETHandler</symbol>
+        <lines>1-100</lines>
+        <reason>Example API pattern to follow: uses withRole() helper, Zod validation, error logging, performance tracking.</reason>
+      </artifact>
+      <artifact>
+        <path>app/api/student/progress/route.ts</path>
+        <kind>API route</kind>
+        <symbol>POSTHandler</symbol>
+        <lines>134-277</lines>
+        <reason>ProgressLog creation/update endpoint. Needs to be updated to trigger dual metrics recalculation after ProgressLog create/update.</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>ProgressLog</symbol>
+        <lines>121-140</lines>
+        <reason>ProgressLog model with rightCount, wrongCount, emptyCount, bonusCount fields. Used to calculate Concept Mastery (accuracy) and Program Progress (solved questions).</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>Assignment</symbol>
+        <lines>98-119</lines>
+        <reason>Assignment model with questionCount field. Used to calculate total assigned questions for Program Progress calculation.</reason>
+      </artifact>
+      <artifact>
+        <path>lib/api-helpers.ts</path>
+        <kind>utility</kind>
+        <symbol>withRole, logApiError, trackPerformance</symbol>
+        <lines>1-200</lines>
+        <reason>API helper functions for role-based authorization, error logging, and performance tracking. Use these in new API endpoints.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="@prisma/client" version="^5.19.0" />
+        <package name="prisma" version="^5.19.0" />
+        <package name="zod" version="^3.23.8" />
+        <package name="typescript" version="^5.5.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Multi-tenant isolation: All dual metrics calculations must respect teacherId isolation - teachers can only see metrics for their own students</constraint>
+    <constraint>API authorization: Use withRole('TEACHER') helper to ensure only teachers can access metrics data</constraint>
+    <constraint>Performance: Dual metrics calculation must complete in &lt; 500ms from ProgressLog update</constraint>
+    <constraint>Real-time updates: Use Next.js Server Actions with revalidation (no extra infrastructure) for automatic updates</constraint>
+    <constraint>Program Progress formula: Program Progress = (total solved / total assigned) × 100</constraint>
+    <constraint>Concept Mastery formula: Concept Mastery = (total right / total attempted) × 100</constraint>
+    <constraint>Edge case handling: Must handle zero assignments, no logged questions, division by zero gracefully</constraint>
+    <constraint>Database optimization: Use indexed queries on ProgressLog.studentId and Assignment.studentId for efficient aggregation</constraint>
+    <constraint>Error handling: Use logApiError() utility for error logging with context</constraint>
+    <constraint>Performance tracking: Use trackPerformance() utility to measure calculation latency</constraint>
+    <constraint>Caching: Implement in-memory cache for metrics results, invalidated on ProgressLog or Assignment updates</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>GET /api/teacher/progress/student/:studentId/metrics</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /api/teacher/progress/student/:studentId/metrics
+Response (200): {
+  programProgress: number,
+  conceptMastery: number,
+  totalSolved: number,
+  totalAssigned: number,
+  lastUpdated: Date
+}
+Response (404): { error: "Student not found" }
+Response (403): { error: "Access denied" }</signature>
+      <path>app/api/teacher/progress/student/[studentId]/metrics/route.ts</path>
+    </interface>
+    <interface>
+      <name>calculateDualMetrics()</name>
+      <kind>function</kind>
+      <signature>async function calculateDualMetrics(studentId: string): Promise&lt;DualMetrics&gt;
+Input: studentId (string)
+Output: DualMetrics {
+  programProgress: number,
+  conceptMastery: number,
+  totalSolved: number,
+  totalAssigned: number,
+  lastUpdated: Date
+}
+Throws: Error if studentId invalid, or tenant isolation violation</signature>
+      <path>lib/progress-calculator.ts</path>
+    </interface>
+    <interface>
+      <name>POST /api/student/progress</name>
+      <kind>REST endpoint</kind>
+      <signature>POST /api/student/progress
+Body: { assignmentId: string, date?: string, rightCount: number, wrongCount: number, emptyCount: number, bonusCount: number }
+Response: { success: boolean, data: ProgressLog }
+After create/update: Triggers dual metrics recalculation</signature>
+      <path>app/api/student/progress/route.ts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Unit tests for calculation logic with edge cases, integration tests for API endpoints and real-time triggers.
+      Focus on dual metrics calculation correctness, performance requirements (&lt; 500ms), and tenant isolation.
+      Test edge cases: zero assignments, no logged questions, all solved, division by zero, missing data.
+      Manual testing for API endpoints via browser dev tools or Postman.
+    </standards>
+    <locations>
+      Unit tests: Create test file for lib/progress-calculator.ts (e.g., lib/__tests__/progress-calculator.test.ts)
+      Integration tests: Test API endpoints via browser dev tools Network tab or Postman
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test dual metrics calculation</description>
+        <steps>1. Create test data: 1500 solved questions, 2000 assigned questions, 1200 right out of 1500 attempted. 2. Call calculateDualMetrics(). 3. Verify Program Progress = (1500/2000) × 100 = 75%. 4. Verify Concept Mastery = (1200/1500) × 100 = 80%.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test aggregation across all student data</description>
+        <steps>1. Create multiple assignments and ProgressLog entries for student. 2. Call calculateDualMetrics(). 3. Verify Program Progress calculated from all assignments. 4. Verify Concept Mastery calculated from all ProgressLog entries.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test edge case: no assignments</description>
+        <steps>1. Call calculateDualMetrics() for student with no assignments. 2. Verify Program Progress = 0%. 3. Verify Concept Mastery = 0% or undefined. 4. Verify no error is thrown.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test edge case: no logged questions</description>
+        <steps>1. Call calculateDualMetrics() for student with assignments but no ProgressLog entries. 2. Verify Program Progress = 0%. 3. Verify Concept Mastery = 0% or undefined. 4. Verify no error is thrown.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test automatic recalculation trigger</description>
+        <steps>1. Create ProgressLog via POST /api/student/progress. 2. Verify dual metrics recalculation is triggered automatically. 3. Verify calculation completes in &lt; 500ms. 4. Verify cache is invalidated and updated.</steps>
+      </test>
+      <test id="API1">
+        <description>Test API endpoint with valid inputs</description>
+        <steps>1. Call GET /api/teacher/progress/student/:studentId/metrics with valid student. 2. Verify response includes dual metrics data. 3. Verify calculations are correct. 4. Verify response time &lt; 200ms for cached result.</steps>
+      </test>
+      <test id="API2">
+        <description>Test API endpoint tenant isolation</description>
+        <steps>1. Call GET /api/teacher/progress/student/:studentId/metrics with student from different teacher. 2. Verify API returns 403 Forbidden. 3. Verify error message indicates access denied.</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

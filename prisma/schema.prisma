@@ -36,6 +36,11 @@ model User {
   progressLogs   ProgressLog[]
   messages       Message[] @relation("MessageSender")
   receivedMessages Message[] @relation("MessageReceiver")
+  accuracyAlerts AccuracyAlert[]
+  teacherNotesAsTeacher TeacherNote[] @relation("TeacherNotes")
+  teacherNotesAsStudent TeacherNote[] @relation("StudentNotes")
+  preferences    UserPreference[]
+  preferences    UserPreference[]
 
   @@index([teacherId])
   @@index([role])
@@ -63,6 +68,7 @@ model Lesson {
   updatedAt DateTime @updatedAt
 
   topics Topic[]
+  accuracyAlerts AccuracyAlert[]
 
   @@index([teacherId])
 }
@@ -77,6 +83,7 @@ model Topic {
   lesson      Lesson      @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   resources   Resource[]
   assignments Assignment[]
+  accuracyAlerts AccuracyAlert[]
 
   @@index([lessonId])
 }
@@ -147,7 +154,8 @@ model Subscription {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  teacher User @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  teacher User      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  payments Payment[]
 
   @@index([endDate])
 }
@@ -166,5 +174,58 @@ model Message {
   @@index([senderId])
   @@index([receiverId])
   @@index([createdAt])
+}
+
+model AccuracyAlert {
+  id        String   @id @default(cuid())
+  studentId String
+  topicId   String?
+  lessonId  String?
+  accuracy  Float
+  threshold Float    @default(70)
+  resolved  Boolean  @default(false)
+  resolvedAt DateTime?
+  createdAt DateTime @default(now())
+
+  student User    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  topic   Topic?  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  lesson  Lesson? @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([topicId])
+  @@index([lessonId])
+  @@index([resolved])
+  @@index([createdAt])
+}
+
+model TeacherNote {
+  id        String   @id @default(cuid())
+  teacherId String
+  studentId String
+  note      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teacher User @relation("TeacherNotes", fields: [teacherId], references: [id], onDelete: Cascade)
+  student User @relation("StudentNotes", fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([teacherId])
+  @@index([createdAt])
+}
+
+model Payment {
+  id            String       @id @default(cuid())
+  subscriptionId String
+  amount        Decimal      @db.Decimal(10, 2)
+  paymentDate   DateTime
+  notes         String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId])
+  @@index([paymentDate])
 }
 

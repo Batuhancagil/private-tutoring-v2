@@ -1,0 +1,154 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>9</epicId>
+    <storyId>9-2</storyId>
+    <title>Teacher-Student Messaging</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/9-2-teacher-student-messaging.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Teacher or Student</asA>
+    <iWant>to message each other</iWant>
+    <soThat>we can communicate about assignments</soThat>
+    <tasks>
+      <task>Extend messaging API for teacher-student conversations</task>
+      <task>Validate teacher-student relationship exists (teacher owns student)</task>
+      <task>Ensure tenant isolation (teacher can only message their students)</task>
+      <task>Update recipient selector for teachers (show their students)</task>
+      <task>Update recipient selector for students (show their teacher)</task>
+      <task>Filter conversations by teacher-student relationship</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>I am a Teacher or Student</given>
+      <when>I send a message</when>
+      <then>I can message: Teacher → Student, Student → Teacher</then>
+      <and>messages are organized in threads</and>
+      <and>message history is visible</and>
+    </criterion>
+    <criterion id="AC2">
+      <given>I am a Teacher</given>
+      <when>I view my messages</when>
+      <then>I can see conversations with all my students</then>
+      <and>I can select a student to message</and>
+      <and>I can see our conversation history</and>
+    </criterion>
+    <criterion id="AC3">
+      <given>I am a Student</given>
+      <when>I view my messages</when>
+      <then>I can see my conversation with my teacher</then>
+      <and>I can send messages to my teacher</and>
+      <and>I can see our conversation history</and>
+    </criterion>
+    <criterion id="AC4">
+      <given>I send a message to a student/teacher</given>
+      <when>the message is sent</when>
+      <then>it appears in the correct conversation thread</then>
+      <and>recipient can see the message</and>
+      <and>message is associated with the correct teacher-student relationship</and>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 9: Communication Features - Story 9.2</section>
+        <snippet>As a Teacher or Student, I want to message each other, So that we can communicate about assignments. Teacher-student messaging, conversation threading, message permissions.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/9-1-in-page-messaging-system.md</path>
+        <title>Story 9.1: In-Page Messaging System</title>
+        <section>Learnings</section>
+        <snippet>Messaging data model established. Messaging API endpoints established. Messaging UI components established. Conversation threading patterns established.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>app/api/messages/route.ts</path>
+        <kind>API route</kind>
+        <symbol>GETHandler, POSTHandler</symbol>
+        <lines>1-200</lines>
+        <reason>Messaging API endpoint. Extend to handle teacher-student messaging with relationship validation and tenant isolation.</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>User</symbol>
+        <lines>20-42</lines>
+        <reason>User model with teacherId field. Use to validate teacher-student relationship (student.teacherId === teacher.id).</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="@prisma/client" version="^5.19.0" />
+        <package name="prisma" version="^5.19.0" />
+        <package name="zod" version="^3.23.8" />
+        <package name="typescript" version="^5.5.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Relationship validation: Validate teacher-student relationship exists (teacher owns student) before allowing messaging</constraint>
+    <constraint>Tenant isolation: Teacher can only message their students - enforce in API</constraint>
+    <constraint>Recipient filtering: Teachers see their students in recipient selector, students see their teacher</constraint>
+    <constraint>Conversation filtering: Filter conversations by teacher-student relationship</constraint>
+    <constraint>Component pattern: Follow existing component patterns from components/messaging/ - use TypeScript, Tailwind CSS, proper prop types</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>POST /api/messages (teacher-student)</name>
+      <kind>REST endpoint</kind>
+      <signature>POST /api/messages
+Body: { recipientId: string, content: string }
+Response (200): { success: boolean, data: { conversation: Conversation, message: Message } }
+Response (400): { error: "Invalid teacher-student relationship" }
+Response (403): { error: "Access denied" }</signature>
+      <path>app/api/messages/route.ts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Integration tests for API endpoint with teacher-student validation, component tests for recipient selector, tenant isolation tests.
+      Focus on relationship validation correctness, tenant isolation, and recipient filtering.
+      Test edge cases: invalid teacher-student pairs, teacher messaging non-student, student messaging non-teacher.
+      Manual testing for messaging UI and user experience.
+    </standards>
+    <locations>
+      Integration tests: Test API endpoint via browser dev tools Network tab or Postman
+      Component tests: Test recipient selector filtering
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test teacher-student messaging</description>
+        <steps>1. Teacher sends message to student. 2. Student sends message to teacher. 3. Verify messages organized in threads. 4. Verify message history visible.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test teacher message view</description>
+        <steps>1. Teacher views messages. 2. Verify sees conversations with all students. 3. Verify can select student to message. 4. Verify conversation history visible.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test student message view</description>
+        <steps>1. Student views messages. 2. Verify sees conversation with teacher. 3. Verify can send messages to teacher. 4. Verify conversation history visible.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test message association</description>
+        <steps>1. Send message to student/teacher. 2. Verify appears in correct conversation thread. 3. Verify recipient can see message. 4. Verify message associated with correct teacher-student relationship.</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

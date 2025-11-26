@@ -1,0 +1,176 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>9</epicId>
+    <storyId>9-1</storyId>
+    <title>In-Page Messaging System</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/9-1-in-page-messaging-system.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>user</asA>
+    <iWant>to send messages within the application</iWant>
+    <soThat>I can communicate with teachers/parents/students</soThat>
+    <tasks>
+      <task>Create Message and Conversation models in prisma/schema.prisma</task>
+      <task>Create messaging API endpoints (app/api/messages/route.ts, app/api/conversations/route.ts)</task>
+      <task>Create messaging UI components (ConversationList, MessageThread, MessageComposer, MessageBubble)</task>
+      <task>Create messaging page (app/messages/page.tsx)</task>
+      <task>Implement message sending logic with conversation creation</task>
+      <task>Add recipient selection with role-based permissions</task>
+      <task>Ensure tenant isolation (teachers can only message their students/parents)</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>I am logged in</given>
+      <when>I send a message</when>
+      <then>message is delivered</then>
+      <and>message appears in conversation thread</and>
+      <and>recipient can see the message</and>
+      <and>message history is preserved</and>
+    </criterion>
+    <criterion id="AC2">
+      <given>I am viewing a conversation</given>
+      <when>I see the message thread</when>
+      <then>I see: All messages in chronological order, Sender name and role, Message timestamp, Message content, Ability to reply</then>
+    </criterion>
+    <criterion id="AC3">
+      <given>I send a message</given>
+      <when>the message is sent</when>
+      <then>I see confirmation that message was sent</then>
+      <and>message appears in the thread immediately</and>
+      <and>recipient will see the message when they view the conversation</and>
+    </criterion>
+    <criterion id="AC4">
+      <given>I want to start a new conversation</given>
+      <when>I compose a message</when>
+      <then>I can: Select recipient (based on my role and permissions), Enter message content, Send the message, Create a new conversation thread</then>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 9: Communication Features - Story 9.1</section>
+        <snippet>As a user, I want to send messages within the application, So that I can communicate with teachers/parents/students. Messaging data model, message sending logic, conversation threading, message display components.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR-010: Communication</section>
+        <snippet>FR-010.1: Users shall be able to send messages within the application. Messages organized in conversation threads, message history preserved, role-based recipient selection.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>User</symbol>
+        <lines>20-42</lines>
+        <reason>User model to reference. Add Message and Conversation models with relations to User for messaging system.</reason>
+      </artifact>
+      <artifact>
+        <path>app/api/teacher/assignments/route.ts</path>
+        <kind>API route</kind>
+        <symbol>GETHandler, POSTHandler</symbol>
+        <lines>1-200</lines>
+        <reason>Example API pattern to follow: uses withRole() helper, Zod validation, error logging, performance tracking.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="@prisma/client" version="^5.19.0" />
+        <package name="prisma" version="^5.19.0" />
+        <package name="zod" version="^3.23.8" />
+        <package name="typescript" version="^5.5.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Data model: Message and Conversation models store messages and conversation threads</constraint>
+    <constraint>Tenant isolation: Teachers can only message their students and students' parents - enforce in API</constraint>
+    <constraint>Role-based permissions: Different roles have different messaging permissions - enforce in API and UI</constraint>
+    <constraint>Real-time updates: For MVP, use polling or refresh - real-time can be added in future</constraint>
+    <constraint>Component pattern: Follow existing component patterns - use TypeScript, Tailwind CSS, proper prop types</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Message Model (Prisma)</name>
+      <kind>Database model</kind>
+      <signature>model Message {
+  id: String @id @default(cuid())
+  conversationId: String
+  senderId: String
+  content: String
+  createdAt: DateTime @default(now())
+  readAt: DateTime?
+  conversation: Conversation @relation(...)
+  sender: User @relation(...)
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
+}</signature>
+      <path>prisma/schema.prisma</path>
+    </interface>
+    <interface>
+      <name>Conversation Model (Prisma)</name>
+      <kind>Database model</kind>
+      <signature>model Conversation {
+  id: String @id @default(cuid())
+  participant1Id: String
+  participant2Id: String
+  createdAt: DateTime @default(now())
+  updatedAt: DateTime @updatedAt
+  participant1: User @relation(...)
+  participant2: User @relation(...)
+  messages: Message[]
+  @@unique([participant1Id, participant2Id])
+}</signature>
+      <path>prisma/schema.prisma</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Integration tests for API endpoints, component tests for messaging UI, tenant isolation tests, role-based permission tests.
+      Focus on message delivery, conversation threading, message history, and tenant isolation.
+      Test edge cases: new conversation creation, existing conversation, invalid recipients, tenant isolation.
+      Manual testing for messaging UI and user experience.
+    </standards>
+    <locations>
+      Integration tests: Test API endpoints via browser dev tools Network tab or Postman
+      Component tests: Test messaging components rendering and interactions
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test message sending</description>
+        <steps>1. Send a message. 2. Verify message delivered. 3. Verify message appears in conversation thread. 4. Verify recipient can see message. 5. Verify message history preserved.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test message thread display</description>
+        <steps>1. View conversation. 2. Verify messages in chronological order. 3. Verify shows sender name, role, timestamp, content. 4. Verify can reply.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test message confirmation</description>
+        <steps>1. Send message. 2. Verify confirmation displays. 3. Verify message appears in thread immediately. 4. Verify recipient will see message when viewing conversation.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test new conversation</description>
+        <steps>1. Compose new message. 2. Select recipient (based on role/permissions). 3. Enter message content. 4. Send message. 5. Verify new conversation thread created.</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

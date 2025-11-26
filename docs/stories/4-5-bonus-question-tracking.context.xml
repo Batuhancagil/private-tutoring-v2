@@ -1,0 +1,176 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>4</epicId>
+    <storyId>4-5</storyId>
+    <title>Bonus Question Tracking</title>
+    <status>review</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/4-5-bonus-question-tracking.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>Student</asA>
+    <iWant>to log bonus questions separately</iWant>
+    <soThat>my teacher can see extra work I did</soThat>
+    <tasks>
+      <task>Verify bonusCount field exists in ProgressLog schema</task>
+      <task>Update ProgressLogForm to highlight bonus question field</task>
+      <task>Add visual distinction (different background color, icon, or label)</task>
+      <task>Update progress display to show bonus separately</task>
+      <task>Ensure bonus questions included in progress calculations</task>
+      <task>Update progress calculation services to include bonusCount</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>I have completed my assigned questions</given>
+      <when>I log bonus questions</when>
+      <then>bonus questions are tracked separately</then>
+      <and>displayed differently (dark green vs light green)</and>
+      <and>included in progress calculations</and>
+    </criterion>
+    <criterion id="AC2">
+      <given>I log bonus questions</given>
+      <when>I view my progress</when>
+      <then>bonus questions are shown separately from assigned questions</then>
+      <and>visual distinction is clear (color coding)</and>
+    </criterion>
+    <criterion id="AC3">
+      <given>bonus questions are logged</given>
+      <when>progress is calculated</when>
+      <then>bonus questions are included in total progress</then>
+      <and>accuracy calculations include bonus questions</and>
+    </criterion>
+    <criterion id="AC4">
+      <given>I view my progress dashboard</given>
+      <when>I see question counts</when>
+      <then>assigned questions and bonus questions are displayed separately</then>
+      <and>total includes both assigned and bonus</and>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 4: Daily Question Logging - Story 4.5</section>
+        <snippet>As a Student, I want to log bonus questions separately, So that my teacher can see extra work I did. Bonus question field in logging form, separate tracking in database, visual distinction, progress calculation inclusion.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR-005: Daily Question Logging</section>
+        <snippet>FR-005.5: Students shall be able to log bonus questions separately. Bonus questions are tracked separately, displayed with visual distinction, and included in progress calculations.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/4-2-daily-question-logging-form.md</path>
+        <title>Story 4.2: Daily Question Logging Form</title>
+        <section>Learnings</section>
+        <snippet>ProgressLogForm component created. Form validation and submission patterns established. BonusCount field already exists in schema.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>ProgressLog</symbol>
+        <lines>121-140</lines>
+        <reason>ProgressLog model already has bonusCount field. Verify field is included in API responses and form submission.</reason>
+      </artifact>
+      <artifact>
+        <path>components/student/ProgressLogForm.tsx</path>
+        <kind>component</kind>
+        <symbol>ProgressLogForm</symbol>
+        <lines>1-200</lines>
+        <reason>Progress logging form component. Update to highlight bonus question field with visual distinction (different color, icon, or label).</reason>
+      </artifact>
+      <artifact>
+        <path>components/student/TodaysAssignmentCard.tsx</path>
+        <kind>component</kind>
+        <symbol>TodaysAssignmentCard</symbol>
+        <lines>1-150</lines>
+        <reason>Student dashboard component. Update progress display to show bonus questions separately from assigned questions with visual distinction.</reason>
+      </artifact>
+      <artifact>
+        <path>lib/progress-calculator.ts</path>
+        <kind>service</kind>
+        <symbol>calculateTopicProgress</symbol>
+        <lines>1-200</lines>
+        <reason>Progress calculation service. Ensure bonusCount is included in total progress and accuracy calculations (denominator includes bonusCount).</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="@prisma/client" version="^5.19.0" />
+        <package name="prisma" version="^5.19.0" />
+        <package name="typescript" version="^5.5.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Visual distinction: Bonus questions displayed differently (dark green vs light green, or icon, or separate section)</constraint>
+    <constraint>Progress calculation: Bonus questions included in total progress: total = right + wrong + empty + bonus</constraint>
+    <constraint>Accuracy calculation: Bonus questions included in accuracy denominator: accuracy = (right / (right + wrong + empty + bonus)) × 100</constraint>
+    <constraint>Display: Assigned questions and bonus questions displayed separately, total includes both</constraint>
+    <constraint>Component pattern: Follow existing component patterns from components/student/ - use TypeScript, Tailwind CSS, proper prop types</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>ProgressLog Model (with bonusCount)</name>
+      <kind>Database model</kind>
+      <signature>model ProgressLog {
+  id: String @id @default(cuid())
+  studentId: String
+  assignmentId: String
+  date: DateTime @db.Date
+  rightCount: Int @default(0)
+  wrongCount: Int @default(0)
+  emptyCount: Int @default(0)
+  bonusCount: Int @default(0) // Bonus questions tracked separately
+  ...
+}</signature>
+      <path>prisma/schema.prisma</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Component tests for visual distinction, integration tests for progress calculation including bonus questions.
+      Focus on bonus question tracking, visual distinction, and progress calculation correctness.
+      Test edge cases: no bonus questions, all bonus questions, bonus questions with assigned questions.
+      Manual testing for visual appearance and progress calculation accuracy.
+    </standards>
+    <locations>
+      Component tests: Test ProgressLogForm and TodaysAssignmentCard components for bonus question display
+      Integration tests: Test progress calculation including bonus questions
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test bonus question tracking</description>
+        <steps>1. Log bonus questions (e.g., bonusCount: 10). 2. Verify bonus questions tracked separately. 3. Verify displayed differently (dark green vs light green). 4. Verify included in progress calculations.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test visual distinction</description>
+        <steps>1. View progress with bonus questions. 2. Verify bonus questions shown separately from assigned questions. 3. Verify visual distinction is clear (color coding or separate section).</steps>
+      </test>
+      <test id="AC3">
+        <description>Test progress calculation with bonus</description>
+        <steps>1. Log progress with bonus questions. 2. Calculate progress. 3. Verify bonus questions included in total progress. 4. Verify accuracy calculations include bonus questions in denominator.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test progress display</description>
+        <steps>1. View progress dashboard with bonus questions. 2. Verify assigned questions and bonus questions displayed separately. 3. Verify total includes both assigned and bonus.</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

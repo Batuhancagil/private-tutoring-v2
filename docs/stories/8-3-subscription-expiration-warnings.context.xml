@@ -1,0 +1,166 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context" v="1.0">
+  <metadata>
+    <epicId>8</epicId>
+    <storyId>8-3</storyId>
+    <title>Subscription Expiration Warnings</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/8-3-subscription-expiration-warnings.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>system</asA>
+    <iWant>to warn about expiring subscriptions</iWant>
+    <soThat>Superadmin can renew them in time</soThat>
+    <tasks>
+      <task>Create subscription-helpers.ts with expiration calculation functions</task>
+      <task>Calculate days until expiration</task>
+      <task>Determine expiration status (critical, warning, info, none, expired)</task>
+      <task>Extend subscription API with expiration info</task>
+      <task>Update subscription list UI to highlight expiring subscriptions</task>
+      <task>Add visual indicators (red/yellow/blue) for different expiration statuses</task>
+      <task>Sort/filter expiring subscriptions to top</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <given>a subscription is expiring soon (7 days)</given>
+      <when>Superadmin views subscriptions</when>
+      <then>expiring subscriptions are highlighted</then>
+      <and>warning messages are displayed</and>
+      <and>expiration date is clearly shown</and>
+    </criterion>
+    <criterion id="AC2">
+      <given>a subscription expires in different timeframes</given>
+      <when>I view subscriptions</when>
+      <then>I see: Critical warning (red) for &lt; 3 days, Warning (yellow) for 3-7 days, Info (blue) for 7-14 days, No warning for &gt; 14 days</then>
+    </criterion>
+    <criterion id="AC3">
+      <given>multiple subscriptions are expiring</given>
+      <when>I view the subscription list</when>
+      <then>expiring subscriptions are sorted to the top (or filtered)</then>
+      <and>I can see expiration count summary</and>
+    </criterion>
+    <criterion id="AC4">
+      <given>a subscription has expired</given>
+      <when>I view subscriptions</when>
+      <then>expired subscriptions are clearly marked</then>
+      <and>I can see how many days ago it expired</and>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 8: Subscription Management - Story 8.3</section>
+        <snippet>As a system, I want to warn about expiring subscriptions, So that Superadmin can renew them in time. Expiration calculation, warning display logic, visual indicators, warning thresholds (7 days).</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR-009: Subscription Management</section>
+        <snippet>FR-009.3: The system shall warn about expiring subscriptions. Display warnings with visual indicators (red/yellow/blue) based on days until expiration.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/8-1-subscription-crud-operations.md</path>
+        <title>Story 8.1: Subscription CRUD Operations</title>
+        <section>Learnings</section>
+        <snippet>Subscription model exists. Subscription API endpoints established. Subscription list UI patterns established.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database schema</kind>
+        <symbol>Subscription</symbol>
+        <lines>142-153</lines>
+        <reason>Subscription model with startDate and endDate fields. Use to calculate expiration status and days until expiration.</reason>
+      </artifact>
+      <artifact>
+        <path>app/api/admin/subscriptions/route.ts</path>
+        <kind>API route</kind>
+        <symbol>GETHandler</symbol>
+        <lines>1-200</lines>
+        <reason>Subscription API endpoint. Extend to include expiration info (daysUntilExpiration, expirationStatus) in response.</reason>
+      </artifact>
+      <artifact>
+        <path>app/admin/subscriptions/page.tsx</path>
+        <kind>page</kind>
+        <symbol>SubscriptionsPage</symbol>
+        <lines>1-100</lines>
+        <reason>Subscription list page. Update to highlight expiring subscriptions with visual indicators and sort/filter by expiration status.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="^14.2.0" />
+        <package name="react" version="^18.3.0" />
+        <package name="react-dom" version="^18.3.0" />
+        <package name="@prisma/client" version="^5.19.0" />
+        <package name="prisma" version="^5.19.0" />
+        <package name="zod" version="^3.23.8" />
+        <package name="typescript" version="^5.5.0" />
+        <package name="date-fns" version="^4.1.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Expiration calculation: Calculate days until expiration from current date to endDate</constraint>
+    <constraint>Expiration status: Critical (&lt; 3 days, red), Warning (3-7 days, yellow), Info (7-14 days, blue), None (&gt; 14 days), Expired (past endDate)</constraint>
+    <constraint>Visual indicators: Use color coding (red/yellow/blue) for different expiration statuses</constraint>
+    <constraint>Sorting/filtering: Expiring subscriptions sorted to top or filtered for easy visibility</constraint>
+    <constraint>Expiration summary: Display count of expiring subscriptions</constraint>
+    <constraint>Component pattern: Follow existing component patterns from components/admin/ - use TypeScript, Tailwind CSS, proper prop types</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>calculateExpirationStatus()</name>
+      <kind>function</kind>
+      <signature>function calculateExpirationStatus(endDate: Date): { status: 'critical' | 'warning' | 'info' | 'none' | 'expired', daysUntilExpiration: number, color: 'red' | 'yellow' | 'blue' | 'gray' }
+Input: endDate (Date)
+Output: { status, daysUntilExpiration, color }
+Calculates expiration status based on days until expiration</signature>
+      <path>lib/subscription-helpers.ts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Testing approach: Unit tests for expiration calculation logic, integration tests for API endpoint with expiration info, component tests for visual indicators.
+      Focus on expiration calculation correctness, visual indicator accuracy, and sorting/filtering functionality.
+      Test edge cases: exactly 3 days, exactly 7 days, exactly 14 days, already expired, far future.
+      Manual testing for visual appearance and expiration warnings.
+    </standards>
+    <locations>
+      Unit tests: Create test file for lib/subscription-helpers.ts (e.g., lib/__tests__/subscription-helpers.test.ts)
+      Integration tests: Test API endpoint via browser dev tools Network tab or Postman
+      Component tests: Test subscription list UI with expiration indicators
+      No formal test framework currently configured - focus on manual testing and code review
+    </locations>
+    <ideas>
+      <test id="AC1">
+        <description>Test expiration warnings</description>
+        <steps>1. View subscriptions with expiring subscription (7 days). 2. Verify expiring subscription highlighted. 3. Verify warning messages displayed. 4. Verify expiration date clearly shown.</steps>
+      </test>
+      <test id="AC2">
+        <description>Test expiration status colors</description>
+        <steps>1. View subscriptions with different expiration timeframes. 2. Verify critical (&lt; 3 days) shows red. 3. Verify warning (3-7 days) shows yellow. 4. Verify info (7-14 days) shows blue. 5. Verify no warning for &gt; 14 days.</steps>
+      </test>
+      <test id="AC3">
+        <description>Test sorting/filtering</description>
+        <steps>1. View subscription list with multiple expiring subscriptions. 2. Verify expiring subscriptions sorted to top. 3. Verify expiration count summary displayed.</steps>
+      </test>
+      <test id="AC4">
+        <description>Test expired subscriptions</description>
+        <steps>1. View subscriptions with expired subscription. 2. Verify expired subscription clearly marked. 3. Verify shows how many days ago it expired.</steps>
+      </test>
+    </ideas>
+  </tests>
+</story-context>
+

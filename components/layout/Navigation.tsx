@@ -168,6 +168,8 @@ function getRoleLinks(role: string): Array<{ href: string; label: string }> {
         { href: '/teacher/dashboard', label: 'Dashboard' },
         { href: '/teacher/students', label: 'Students' },
         { href: '/teacher/assignments', label: 'Assignments' },
+        { href: '/teacher/timeline', label: 'Timeline' },
+        { href: '/teacher/calendar', label: 'Calendar' },
         { href: '/teacher/resources', label: 'Resources' },
       ];
     case 'STUDENT':

@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { verifyToken } from './lib/auth';
 
 // Routes that don't require authentication
-const publicRoutes = ['/login', '/api/auth/login', '/api/health'];
+const publicRoutes = ['/login', '/api/auth/login', '/api/health', '/subscription-expired'];
 
 // Routes that require authentication
 const protectedRoutes = ['/dashboard', '/api'];
@@ -71,6 +71,15 @@ export async function middleware(request: NextRequest) {
     // SUPERADMIN has access to all routes
     if (payload.role === 'SUPERADMIN') {
       return NextResponse.next();
+    }
+
+    // Students and Parents don't need subscription checks
+    if (payload.role === 'STUDENT' || payload.role === 'PARENT') {
+      // Continue with role-based access check
+    } else if (payload.role === 'TEACHER') {
+      // For teachers, check subscription status
+      // Note: We can't use Prisma in middleware, so we'll check in API routes and pages
+      // Middleware will allow access, but API routes will enforce subscription check
     }
 
     // Check role-based access for other roles
