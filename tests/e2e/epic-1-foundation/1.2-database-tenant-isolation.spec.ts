@@ -81,10 +81,24 @@ test.describe('Story 1.2: Database Schema & Multi-Tenant Foundation [P0]', () =>
       await page.waitForLoadState('networkidle', { timeout: 10000 });
 
       // Then: Teacher1 sees only their student (student1), not student2
-      const pageContent = await page.textContent('body');
-      expect(pageContent).toContain(student1.username);
-      // Note: This assumes the students page displays usernames
-      // If not, we'd need to check via API instead
+      // Check via API response instead of page content for more reliable test
+      const response = await page.request.get('/api/teacher/students', {
+        headers: {
+          Cookie: (await page.context().cookies()).map(c => `${c.name}=${c.value}`).join('; '),
+        },
+      });
+      
+      expect(response.status()).toBe(200);
+      const data = await response.json();
+      const studentsList = data.data || [];
+      
+      // Student1 should be in the list
+      const foundStudent1 = studentsList.find((s: any) => s.id === student1.id || s.username === student1.username);
+      expect(foundStudent1).toBeDefined();
+      
+      // Student2 should NOT be in the list
+      const foundStudent2 = studentsList.find((s: any) => s.id === student2.id || s.username === student2.username);
+      expect(foundStudent2).toBeUndefined();
     });
   });
 
@@ -137,10 +151,11 @@ test.describe('Story 1.2: Database Schema & Multi-Tenant Foundation [P0]', () =>
 
       // Then: Response contains only teacher1's students
       expect(studentsResponse.status()).toBe(200);
-      const students = await studentsResponse.json();
+      const response = await studentsResponse.json();
       
-      // Response should be an array or object with students array
-      const studentsList = Array.isArray(students) ? students : (students.students || students.data || []);
+      // Response structure: { success: true, data: [...] }
+      const studentsList = response.data || [];
+      expect(Array.isArray(studentsList)).toBe(true);
       
       // Find student1 in the list
       const foundStudent1 = studentsList.find((s: any) => s.id === student1.id || s.username === student1.username);
@@ -156,7 +171,7 @@ test.describe('Story 1.2: Database Schema & Multi-Tenant Foundation [P0]', () =>
       const superadmin = await userFactory.createUser({
         username: `superadmin-${Date.now()}`,
         password: 'TestPassword123',
-        role: 'superadmin',
+        role: 'superadmin' as any, // UserFactory maps to SUPERADMIN
       });
 
       const teacher1 = await userFactory.createUser({
@@ -191,10 +206,11 @@ test.describe('Story 1.2: Database Schema & Multi-Tenant Foundation [P0]', () =>
 
       // Then: Response contains all teachers (superadmin can access all tenants)
       expect(teachersResponse.status()).toBe(200);
-      const teachers = await teachersResponse.json();
+      const response = await teachersResponse.json();
       
-      // Response should contain both teachers
-      const teachersList = Array.isArray(teachers) ? teachers : (teachers.teachers || teachers.data || []);
+      // Response structure: { success: true, data: [...] }
+      const teachersList = response.data || [];
+      expect(Array.isArray(teachersList)).toBe(true);
       
       const foundTeacher1 = teachersList.find((t: any) => t.id === teacher1.id || t.username === teacher1.username);
       const foundTeacher2 = teachersList.find((t: any) => t.id === teacher2.id || t.username === teacher2.username);
@@ -247,8 +263,8 @@ test.describe('Story 1.2: Database Schema & Multi-Tenant Foundation [P0]', () =>
 
       // Then: Teacher1's students list does not include teacher2's student
       expect(studentsResponse.status()).toBe(200);
-      const students = await studentsResponse.json();
-      const studentsList = Array.isArray(students) ? students : (students.students || students.data || []);
+      const response = await studentsResponse.json();
+      const studentsList = response.data || [];
       
       const foundStudent2 = studentsList.find((s: any) => s.id === student2.id || s.username === student2.username);
       expect(foundStudent2).toBeUndefined();

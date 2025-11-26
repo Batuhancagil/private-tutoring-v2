@@ -64,6 +64,7 @@ function mapRoleToPrisma(role: UserRole): PrismaUserRole {
 
 export class UserFactory {
   private createdUsers: CreatedUser[] = [];
+  private createdSubscriptions: string[] = []; // Track subscription IDs for cleanup
 
   /**
    * Create a test user directly in the database
@@ -118,11 +119,43 @@ export class UserFactory {
       
       this.createdUsers.push(testUser);
       
+      // If this is a teacher, create an active subscription automatically
+      if (role === 'teacher') {
+        await this.createSubscriptionForTeacher(created.id);
+      }
+      
       return testUser;
     } catch (error) {
       // Log error but don't fail silently
       console.error('UserFactory: Failed to create user in database:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Create an active subscription for a teacher
+   * 
+   * @param teacherId - The teacher's user ID
+   * @param monthsDuration - Number of months the subscription should last (default: 12)
+   */
+  async createSubscriptionForTeacher(teacherId: string, monthsDuration: number = 12): Promise<void> {
+    const now = new Date();
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + monthsDuration);
+
+    try {
+      const subscription = await prisma.subscription.create({
+        data: {
+          teacherId,
+          startDate: now,
+          endDate: endDate,
+        },
+      });
+      
+      this.createdSubscriptions.push(subscription.id);
+    } catch (error) {
+      // If subscription already exists, that's okay - don't fail
+      console.warn(`UserFactory: Failed to create subscription for teacher ${teacherId}:`, error);
     }
   }
 
@@ -137,12 +170,24 @@ export class UserFactory {
   }
 
   /**
-   * Cleanup all created users
+   * Cleanup all created users and subscriptions
    * 
    * This method should be called automatically by the fixture,
    * but can be called manually if needed.
    */
   async cleanup(): Promise<void> {
+    // Delete subscriptions first (they have foreign key constraints)
+    for (const subscriptionId of this.createdSubscriptions) {
+      try {
+        await prisma.subscription.delete({
+          where: { id: subscriptionId },
+        });
+      } catch (error) {
+        // Log but don't fail - cleanup errors shouldn't break tests
+        console.warn(`Failed to cleanup subscription ${subscriptionId}:`, error);
+      }
+    }
+    
     // Delete all created users from database using Prisma
     for (const user of this.createdUsers) {
       try {
@@ -156,8 +201,9 @@ export class UserFactory {
       }
     }
     
-    // Clear the tracking array
+    // Clear the tracking arrays
     this.createdUsers = [];
+    this.createdSubscriptions = [];
   }
 
   /**
