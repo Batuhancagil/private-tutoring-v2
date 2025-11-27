@@ -74,10 +74,24 @@ export function TeacherDashboardClient() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading dashboard...</p>
+      <div className="space-y-4 sm:space-y-6">
+        {/* Skeleton for summary cards */}
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg border p-4 sm:p-6">
+              <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-4"></div>
+              <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            </div>
+          ))}
+        </div>
+        {/* Skeleton for student list */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg border p-4 sm:p-6">
+          <div className="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-4"></div>
+          <div className="space-y-2 sm:space-y-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -100,9 +114,9 @@ export function TeacherDashboardClient() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Summary Cards */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Total Students</CardTitle>
@@ -168,12 +182,12 @@ export function TeacherDashboardClient() {
             </div>
           ) : (
             <>
-              <div className="space-y-2">
+              <div className="space-y-2 sm:space-y-3">
                 {paginatedStudents.map((student) => (
                   <Link
                     key={student.id}
                     href={`/teacher/students/${student.id}`}
-                    className="block p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    className="block p-3 sm:p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors touch-manipulation min-h-[60px]"
                   >
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-3">

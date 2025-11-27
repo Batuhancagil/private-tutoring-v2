@@ -68,8 +68,11 @@ export function TodaysAssignmentCard() {
         <CardHeader>
           <CardTitle>Today&apos;s Assignment</CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Loading...</p>
+        <CardContent className="space-y-4">
+          <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+          <div className="h-6 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+          <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+          <div className="h-2.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
         </CardContent>
       </Card>
     );

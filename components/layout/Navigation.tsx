@@ -75,9 +75,9 @@ export function Navigation({ user }: NavigationProps) {
             {/* Mobile menu button */}
             <button
               type="button"
-              className="md:hidden inline-flex items-center justify-center rounded-md p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+              className="md:hidden inline-flex items-center justify-center rounded-md p-2.5 min-h-[44px] min-w-[44px] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 touch-manipulation"
               aria-controls="mobile-menu"
-              aria-expanded="false"
+              aria-expanded={mobileMenuOpen}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               <span className="sr-only">Open main menu</span>
@@ -136,7 +136,7 @@ export function Navigation({ user }: NavigationProps) {
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
                   className={`
-                    block rounded-md px-3 py-2 text-base font-medium transition-colors
+                    block rounded-md px-3 py-3 min-h-[44px] text-base font-medium transition-colors touch-manipulation
                     ${
                       isActive(link.href)
                         ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-900 dark:text-indigo-100'
@@ -171,12 +171,14 @@ function getRoleLinks(role: string): Array<{ href: string; label: string }> {
         { href: '/teacher/timeline', label: 'Timeline' },
         { href: '/teacher/calendar', label: 'Calendar' },
         { href: '/teacher/resources', label: 'Resources' },
+        { href: '/teacher/messages', label: 'Messages' },
       ];
     case 'STUDENT':
       return [
         { href: '/student/dashboard', label: 'Dashboard' },
         { href: '/student/log', label: 'Log Progress' },
         { href: '/student/progress', label: 'My Progress' },
+        { href: '/student/messages', label: 'Messages' },
       ];
     case 'PARENT':
       return [

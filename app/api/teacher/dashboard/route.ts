@@ -70,7 +70,7 @@ async function GETHandler(request: NextRequest, user: any) {
     const responseTime = Date.now() - startTime;
     trackPerformance(endpoint, method, responseTime, statusCode);
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         success: true,
         data: {
@@ -84,6 +84,11 @@ async function GETHandler(request: NextRequest, user: any) {
       },
       { status: 200 }
     );
+
+    // Add caching headers for performance (cache for 30 seconds)
+    response.headers.set('Cache-Control', 'private, s-maxage=30, stale-while-revalidate=60');
+
+    return response;
   } catch (error) {
     const responseTime = Date.now() - startTime;
     trackPerformance(endpoint, method, responseTime, statusCode);

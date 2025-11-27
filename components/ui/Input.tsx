@@ -14,9 +14,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           type={type}
           inputMode={inputMode}
           className={cn(
-            'flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-600',
+            'flex h-11 min-h-[44px] w-full rounded-md border border-gray-300 dark:border-gray-600',
             'bg-white dark:bg-gray-800',
-            'px-3 py-2 text-sm',
+            'px-3 py-2.5 text-base sm:text-sm',
             'text-gray-900 dark:text-white',
             'placeholder:text-gray-400 dark:placeholder:text-gray-500',
             'focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent',
@@ -27,10 +27,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             className
           )}
           ref={ref}
+          aria-invalid={error ? 'true' : undefined}
+          aria-describedby={error && props.id ? `${props.id}-error` : undefined}
           {...props}
         />
         {error && (
-          <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+          <p className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert" id={props.id ? `${props.id}-error` : undefined}>
             {error}
           </p>
         )}

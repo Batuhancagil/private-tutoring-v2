@@ -5,6 +5,9 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Button } from '@/components/ui/Button';
+import { useOnlineStatus } from '@/lib/hooks/useOnlineStatus';
+import { saveOfflineLog } from '@/lib/offline-storage';
+import { syncPendingLogs } from '@/lib/sync-manager';
 
 interface TodaysAssignment {
   id: string;
@@ -26,11 +29,13 @@ interface ProgressLogResponse {
 }
 
 export function ProgressLogForm() {
+  const { isOnline } = useOnlineStatus();
   const [assignment, setAssignment] = useState<TodaysAssignment | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [offlineSaved, setOfflineSaved] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split('T')[0]
   );
@@ -125,6 +130,17 @@ export function ProgressLogForm() {
     fetchDataForDate(selectedDate);
   }, []);
 
+  // Try to sync pending logs when component mounts and is online
+  useEffect(() => {
+    if (isOnline) {
+      syncPendingLogs().catch((error) => {
+        // Silently fail - sync manager will handle retries
+        console.error('Background sync failed:', error);
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnline]);
+
   // Handle date change
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newDate = e.target.value;
@@ -199,6 +215,7 @@ export function ProgressLogForm() {
     e.preventDefault();
     setError(null);
     setSuccess(false);
+    setOfflineSaved(false);
 
     if (!validateForm() || !assignment) {
       return;
@@ -217,6 +234,25 @@ export function ProgressLogForm() {
     setSubmitting(true);
 
     try {
+      // If offline, save to local storage
+      if (!isOnline) {
+        saveOfflineLog({
+          assignmentId: assignment.id,
+          rightCount: formData.rightCount,
+          wrongCount: formData.wrongCount,
+          emptyCount: formData.emptyCount,
+          bonusCount: formData.bonusCount,
+          date: selectedDate !== getTodayDateString() ? selectedDate : getTodayDateString(),
+        });
+
+        setOfflineSaved(true);
+        // Reset offline saved message after 5 seconds
+        setTimeout(() => setOfflineSaved(false), 5000);
+        setSubmitting(false);
+        return;
+      }
+
+      // If online, submit normally
       const response = await fetch('/api/student/progress', {
         method: 'POST',
         headers: {
@@ -240,6 +276,14 @@ export function ProgressLogForm() {
       setSuccess(true);
       // Reset success message after 3 seconds
       setTimeout(() => setSuccess(false), 3000);
+
+      // Try to sync any pending offline logs
+      try {
+        await syncPendingLogs();
+      } catch (syncError) {
+        // Don't show sync errors to user, just log
+        console.error('Failed to sync pending logs:', syncError);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -447,6 +491,17 @@ export function ProgressLogForm() {
               </p>
               <p className="text-sm text-green-600 dark:text-green-400 mt-1">
                 You can continue logging or update your progress anytime.
+              </p>
+            </div>
+          )}
+
+          {offlineSaved && (
+            <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
+              <p className="text-base font-medium text-yellow-600 dark:text-yellow-400">
+                ⚠ Progress saved offline
+              </p>
+              <p className="text-sm text-yellow-600 dark:text-yellow-400 mt-1">
+                Your progress has been saved locally and will sync automatically when you're back online.
               </p>
             </div>
           )}

@@ -123,7 +123,7 @@ export function ParentDashboardClient() {
   const progressData = dashboardData?.progressData || [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Low Accuracy Alerts - Display prominently at top */}
       <LowAccuracyAlerts studentId={selectedChildId || undefined} />
 
@@ -137,7 +137,7 @@ export function ParentDashboardClient() {
             <select
               value={selectedChildId || ''}
               onChange={(e) => setSelectedChildId(e.target.value)}
-              className="w-full px-4 py-2 border rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              className="w-full px-4 py-3 min-h-[44px] text-base border rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white touch-manipulation"
             >
               {children.map((child) => (
                 <option key={child.id} value={child.id}>
