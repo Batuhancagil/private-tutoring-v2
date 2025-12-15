@@ -3,6 +3,9 @@ import { withAuth } from '@/lib/api-helpers';
 import { prisma } from '@/lib/prisma';
 import { logApiError } from '@/lib/error-logger';
 
+// Force dynamic rendering since this route uses cookies for authentication
+export const dynamic = 'force-dynamic';
+
 export const GET = withAuth(async (request: NextRequest, user) => {
   try {
     // Fetch fresh user data

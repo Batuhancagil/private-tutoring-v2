@@ -5,6 +5,9 @@ import { UserRole } from '@prisma/client';
 import { logApiError } from '@/lib/error-logger';
 import { trackPerformance } from '@/lib/performance-monitor';
 
+// Force dynamic rendering since this route uses cookies for authentication
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/teacher/resources/hierarchy
  * Get hierarchical structure: lessons with topics and resources

@@ -6,6 +6,9 @@ import { logApiError } from '@/lib/error-logger';
 import { trackPerformance } from '@/lib/performance-monitor';
 import { z } from 'zod';
 
+// Force dynamic rendering since this route uses cookies for authentication
+export const dynamic = 'force-dynamic';
+
 const createGlobalLessonSchema = z.object({
   name: z.string().min(1, 'Lesson name is required'),
 });
