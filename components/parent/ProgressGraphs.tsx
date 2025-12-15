@@ -243,82 +243,105 @@ export function ProgressGraphs({ data, loading, dateRange }: ProgressGraphsProps
       {/* Question Count Graph */}
       <Card>
         <CardHeader>
-          <CardTitle>
+          <CardTitle id="question-count-title">
             {dateRange?.range === '90d' || dateRange?.range === 'all' 
               ? 'Weekly Question Count' 
               : 'Daily Question Count'}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="date"
-                tick={{ fontSize: 12 }}
-                angle={-45}
-                textAnchor="end"
-                height={80}
-              />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '6px',
-                }}
-              />
-              <Legend />
-              <Bar dataKey="right" stackId="a" fill="#10b981" name="Right" />
-              <Bar dataKey="wrong" stackId="a" fill="#ef4444" name="Wrong" />
-              <Bar dataKey="empty" stackId="a" fill="#6b7280" name="Empty" />
-              <Bar dataKey="bonus" stackId="a" fill="#3b82f6" name="Bonus" />
-            </BarChart>
-          </ResponsiveContainer>
+          <div 
+            role="img" 
+            aria-labelledby="question-count-title"
+            aria-label={`${dateRange?.range === '90d' || dateRange?.range === 'all' ? 'Weekly' : 'Daily'} question count graph showing right answers in green, wrong answers in red, empty answers in gray, and bonus questions in blue`}
+            tabIndex={0}
+          >
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 12 }}
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '6px',
+                  }}
+                />
+                <Legend />
+                <Bar dataKey="right" stackId="a" fill="#10b981" name="Right" />
+                <Bar dataKey="wrong" stackId="a" fill="#ef4444" name="Wrong" />
+                <Bar dataKey="empty" stackId="a" fill="#6b7280" name="Empty" />
+                <Bar dataKey="bonus" stackId="a" fill="#3b82f6" name="Bonus" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <p className="sr-only">
+            Interactive bar chart showing daily question counts. Use arrow keys to navigate between data points. 
+            Green bars represent correct answers, red bars represent wrong answers, gray bars represent empty answers, 
+            and blue bars represent bonus questions.
+          </p>
         </CardContent>
       </Card>
 
       {/* Accuracy Trend Graph */}
       <Card>
         <CardHeader>
-          <CardTitle>Accuracy Trend</CardTitle>
+          <CardTitle id="accuracy-trend-title">Accuracy Trend</CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="date"
-                tick={{ fontSize: 12 }}
-                angle={-45}
-                textAnchor="end"
-                height={80}
-              />
-              <YAxis
-                tick={{ fontSize: 12 }}
-                domain={[0, 100]}
-                label={{ value: 'Accuracy (%)', angle: -90, position: 'insideLeft' }}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '6px',
-                }}
-                formatter={(value: number) => [`${value.toFixed(1)}%`, 'Accuracy']}
-              />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="accuracy"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                activeDot={{ r: 6 }}
-                name="Accuracy"
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <div 
+            role="img" 
+            aria-labelledby="accuracy-trend-title"
+            aria-label="Accuracy trend line graph showing performance over time. Blue line represents accuracy percentage from 0 to 100 percent."
+            tabIndex={0}
+          >
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 12 }}
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <YAxis
+                  tick={{ fontSize: 12 }}
+                  domain={[0, 100]}
+                  label={{ value: 'Accuracy (%)', angle: -90, position: 'insideLeft' }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '6px',
+                  }}
+                  formatter={(value: number) => [`${value.toFixed(1)}%`, 'Accuracy']}
+                />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="accuracy"
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
+                  name="Accuracy"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <p className="sr-only">
+            Interactive line chart showing accuracy trend over time. Use arrow keys to navigate between data points. 
+            The blue line shows accuracy percentage, with higher values indicating better performance.
+          </p>
         </CardContent>
       </Card>
     </div>
