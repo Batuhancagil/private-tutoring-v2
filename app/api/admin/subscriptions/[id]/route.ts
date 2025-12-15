@@ -277,7 +277,31 @@ async function DELETEHandler(
 }
 
 // Export handlers with role-based access control
-export const GET = withRole(UserRole.SUPERADMIN, GETHandler);
-export const PUT = withRole(UserRole.SUPERADMIN, PUTHandler);
-export const DELETE = withRole(UserRole.SUPERADMIN, DELETEHandler);
+// Note: Next.js dynamic route params need to be handled differently
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  return withRole(UserRole.SUPERADMIN, async (req, user) =>
+    GETHandler(req, user, { params })
+  )(request);
+}
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  return withRole(UserRole.SUPERADMIN, async (req, user) =>
+    PUTHandler(req, user, { params })
+  )(request);
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  return withRole(UserRole.SUPERADMIN, async (req, user) =>
+    DELETEHandler(req, user, { params })
+  )(request);
+}
 

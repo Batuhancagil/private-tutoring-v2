@@ -4,12 +4,31 @@ import { logApiError } from '@/lib/error-logger';
 /**
  * Check if accuracy is below threshold and generate/update alert accordingly
  * 
- * @param studentId - Student ID
- * @param accuracy - Current accuracy percentage (0-100)
- * @param threshold - Threshold percentage (default 70)
- * @param topicId - Optional topic ID
- * @param lessonId - Optional lesson ID
- * @returns Created or updated alert, or null if no alert needed
+ * Automatically generates or updates accuracy alerts based on student performance.
+ * If accuracy falls below threshold, creates a new alert or updates existing unresolved alert.
+ * If accuracy improves above threshold, automatically resolves existing alerts.
+ * 
+ * This function is designed to be called during progress calculation and should not
+ * throw errors that would interrupt the calculation flow.
+ * 
+ * @param studentId - Student ID (required, must be valid UUID)
+ * @param accuracy - Current accuracy percentage (0-100, or null if no data)
+ * @param threshold - Threshold percentage for alert generation (default: 70)
+ * @param topicId - Optional topic ID for topic-specific alerts
+ * @param lessonId - Optional lesson ID for lesson-specific alerts
+ * @returns Promise resolving to created/updated alert object, or null if no action needed
+ * @throws Never throws - errors are logged but not propagated to prevent breaking progress calculation
+ * 
+ * @example
+ * ```typescript
+ * // Generate alert for low accuracy
+ * const alert = await checkAndGenerateAlert('student-123', 65, 70, 'topic-456');
+ * // alert will be created if accuracy < threshold
+ * 
+ * // Auto-resolve when accuracy improves
+ * const resolved = await checkAndGenerateAlert('student-123', 75, 70, 'topic-456');
+ * // existing alert will be resolved if accuracy >= threshold
+ * ```
  */
 export async function checkAndGenerateAlert(
   studentId: string,
@@ -92,9 +111,19 @@ export async function checkAndGenerateAlert(
 /**
  * Resolve an alert manually
  * 
- * @param alertId - Alert ID
- * @param teacherId - Teacher ID for tenant isolation
- * @returns Updated alert
+ * Marks an alert as resolved and sets the resolvedAt timestamp. Ensures tenant
+ * isolation by verifying the alert belongs to a student of the specified teacher.
+ * 
+ * @param alertId - Alert ID to resolve (required, must be valid UUID)
+ * @param teacherId - Teacher ID for tenant isolation validation (required)
+ * @returns Promise resolving to updated alert object with resolved=true and resolvedAt timestamp
+ * @throws {Error} If alert not found or doesn't belong to teacher's student (access denied)
+ * 
+ * @example
+ * ```typescript
+ * const resolvedAlert = await resolveAlert('alert-123', 'teacher-789');
+ * console.log(`Alert resolved at: ${resolvedAlert.resolvedAt}`);
+ * ```
  */
 export async function resolveAlert(
   alertId: string,
@@ -126,10 +155,24 @@ export async function resolveAlert(
 /**
  * Get alerts for a teacher's students
  * 
- * @param teacherId - Teacher ID
- * @param studentId - Optional student ID filter
- * @param resolved - Optional resolved filter (default false for unresolved only)
- * @returns Array of alerts
+ * Retrieves accuracy alerts for all students belonging to the specified teacher,
+ * with optional filtering by student ID and resolution status. Results are sorted
+ * by creation date (most recent first) and include related student, topic, and
+ * lesson data.
+ * 
+ * @param teacherId - Teacher ID for tenant isolation (required, must be valid UUID)
+ * @param studentId - Optional student ID filter to get alerts for specific student
+ * @param resolved - Optional filter for resolved status (default: false = unresolved only)
+ * @returns Promise resolving to array of alert objects with related data
+ * 
+ * @example
+ * ```typescript
+ * // Get all unresolved alerts for teacher's students
+ * const alerts = await getAlerts('teacher-789');
+ * 
+ * // Get resolved alerts for specific student
+ * const resolvedAlerts = await getAlerts('teacher-789', 'student-123', true);
+ * ```
  */
 export async function getAlerts(
   teacherId: string,

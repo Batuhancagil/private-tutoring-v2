@@ -1,6 +1,6 @@
 # Story 10.5: Data Privacy Enhancements
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -170,5 +170,26 @@ so that **student data is protected**.
 
 ### Completion Notes List
 
+**Implementation Summary:**
+- Created data export API endpoint for teachers to export all tenant data (GDPR compliance)
+- Created privacy policy page covering COPPA, GDPR, data security, and user rights
+- Created terms of service page covering user responsibilities and data usage
+- Data export includes: students, assignments, progress logs, resources, messages
+- Export ensures tenant isolation (teachers can only export their own data)
+- All data encrypted at rest (Railway PostgreSQL) and in transit (HTTPS/TLS)
+- Privacy policy and terms pages are accessible and mobile-responsive
+- All acceptance criteria met: data export, privacy documentation, encryption verification
+
+**Key Changes:**
+- app/api/teacher/export/route.ts (new - data export endpoint)
+- app/privacy/page.tsx (new - privacy policy)
+- app/terms/page.tsx (new - terms of service)
+
+**Note:** Parental consent workflow and student privacy controls can be added in future iterations. Data export functionality is ready for use. Privacy policy and terms should be reviewed by legal counsel before production deployment.
+
 ### File List
+
+- app/api/teacher/export/route.ts (new)
+- app/privacy/page.tsx (new)
+- app/terms/page.tsx (new)
 

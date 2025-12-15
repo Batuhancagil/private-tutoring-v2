@@ -52,8 +52,8 @@ function getDateRange(range?: string, startDate?: string, endDate?: string): { s
   }
   
   // Handle preset ranges
-  if (range && range !== 'custom') {
-    const days = DATE_RANGE_PRESETS[range];
+  if (range && range !== 'custom' && range in DATE_RANGE_PRESETS) {
+    const days = DATE_RANGE_PRESETS[range as keyof typeof DATE_RANGE_PRESETS];
     if (days === null) {
       // All time - no date filter
       return { start: null, end: null };

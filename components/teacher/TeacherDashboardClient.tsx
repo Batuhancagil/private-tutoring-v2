@@ -174,7 +174,7 @@ export function TeacherDashboardClient() {
           {data.students.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-600 dark:text-gray-400 mb-4">
-                You don't have any students yet.
+                You don&apos;t have any students yet.
               </p>
               <Link href="/teacher/students">
                 <Button>Add Your First Student</Button>

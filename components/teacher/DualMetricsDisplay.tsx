@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { ProgressBar } from './ProgressBar';
 import { ProgressIndicator } from './ProgressIndicator';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 interface DualMetrics {
   programProgress: number;
@@ -88,66 +89,78 @@ export function DualMetricsDisplay({ studentId }: DualMetricsDisplayProps) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Student Progress Metrics</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Program Progress */}
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                Program Progress
-                <ProgressIndicator
-                  accuracy={metrics.programProgress}
-                  threshold={70}
-                  showLabel={false}
-                  size="sm"
-                />
-              </h4>
+    <ErrorBoundary
+      fallback={
+        <Card>
+          <CardContent>
+            <div className="text-center py-8 text-red-500">
+              Error loading progress metrics. Please try refreshing the page.
             </div>
-            <ProgressBar
-              value={metrics.programProgress}
-              label=""
-              showPercentage={true}
-              color="auto"
-              threshold={70}
-            />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              {metrics.totalSolved.toLocaleString()} / {metrics.totalAssigned.toLocaleString()} questions solved
-            </p>
-          </div>
-
-          {/* Concept Mastery */}
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                Concept Mastery
-                {metrics.conceptMastery !== null && (
+          </CardContent>
+        </Card>
+      }
+    >
+      <Card>
+        <CardHeader>
+          <CardTitle>Student Progress Metrics</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Program Progress */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                  Program Progress
                   <ProgressIndicator
-                    accuracy={metrics.conceptMastery}
+                    accuracy={metrics.programProgress}
                     threshold={70}
                     showLabel={false}
                     size="sm"
                   />
-                )}
-              </h4>
+                </h4>
+              </div>
+              <ProgressBar
+                value={metrics.programProgress}
+                label=""
+                showPercentage={true}
+                color="auto"
+                threshold={70}
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {metrics.totalSolved.toLocaleString()} / {metrics.totalAssigned.toLocaleString()} questions solved
+              </p>
             </div>
-            <ProgressBar
-              value={metrics.conceptMastery ?? 0}
-              label=""
-              showPercentage={true}
-              color={metrics.conceptMastery !== null ? 'auto' : 'red'}
-              threshold={70}
-            />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              {metrics.totalRight.toLocaleString()} / {metrics.totalAttempted.toLocaleString()} correct
-            </p>
+
+            {/* Concept Mastery */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                  Concept Mastery
+                  {metrics.conceptMastery !== null && (
+                    <ProgressIndicator
+                      accuracy={metrics.conceptMastery}
+                      threshold={70}
+                      showLabel={false}
+                      size="sm"
+                    />
+                  )}
+                </h4>
+              </div>
+              <ProgressBar
+                value={metrics.conceptMastery ?? 0}
+                label=""
+                showPercentage={true}
+                color={metrics.conceptMastery !== null ? 'auto' : 'red'}
+                threshold={70}
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {metrics.totalRight.toLocaleString()} / {metrics.totalAttempted.toLocaleString()} correct
+              </p>
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </ErrorBoundary>
   );
 }
 

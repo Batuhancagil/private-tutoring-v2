@@ -7,6 +7,8 @@ import { RecipientSelector } from './RecipientSelector';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 
+import { UserRole } from '@prisma/client';
+
 interface Message {
   id: string;
   content: string;
@@ -14,12 +16,12 @@ interface Message {
   sender: {
     id: string;
     username: string;
-    role: string;
+    role: UserRole;
   };
   receiver: {
     id: string;
     username: string;
-    role: string;
+    role: UserRole;
   };
 }
 

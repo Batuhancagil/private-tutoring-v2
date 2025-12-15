@@ -6,6 +6,11 @@ import { getAccuracyThreshold } from '@/lib/preferences-service';
 
 /**
  * Topic progress calculation result
+ * 
+ * Represents the calculated progress metrics for a student on a specific topic.
+ * Includes accuracy percentage, question counts, and last update timestamp.
+ * 
+ * @interface TopicProgress
  */
 export interface TopicProgress {
   topicId: string;
@@ -21,13 +26,28 @@ export interface TopicProgress {
 
 /**
  * Calculate topic-level accuracy for a student
- * Formula: accuracy = (rightCount / (rightCount + wrongCount + emptyCount + bonusCount)) × 100
  * 
- * @param studentId - Student ID
- * @param topicId - Topic ID
- * @param teacherId - Teacher ID for tenant isolation (optional, for validation)
- * @returns TopicProgress object with calculated accuracy
- * @throws Error if studentId or topicId invalid, or tenant isolation violation
+ * Aggregates all ProgressLog entries for a student and topic, then calculates
+ * accuracy using the formula: (rightCount / totalQuestions) × 100
+ * where totalQuestions = rightCount + wrongCount + emptyCount + bonusCount
+ * 
+ * Performance: Completes in < 500ms for typical datasets. Results are cached
+ * for 5 minutes to improve response times.
+ * 
+ * @param studentId - Student ID (required, must be valid UUID)
+ * @param topicId - Topic ID (required, must be valid UUID)
+ * @param teacherId - Teacher ID for tenant isolation validation (optional)
+ * @returns Promise resolving to TopicProgress object with calculated metrics
+ * @throws {Error} If studentId or topicId is invalid/empty
+ * @throws {Error} If student not found in database
+ * @throws {Error} If topic not found in database
+ * @throws {Error} If tenant isolation violation (student doesn't belong to teacher)
+ * 
+ * @example
+ * ```typescript
+ * const progress = await calculateTopicProgress('student-123', 'topic-456', 'teacher-789');
+ * console.log(`Accuracy: ${progress.accuracy}%`); // e.g., "Accuracy: 85.5%"
+ * ```
  */
 export async function calculateTopicProgress(
   studentId: string,
@@ -263,6 +283,11 @@ export function invalidateStudentTopicProgressCache(studentId: string): void {
 
 /**
  * Lesson progress calculation result
+ * 
+ * Represents aggregated progress metrics for a student across all topics in a lesson.
+ * Lesson accuracy is calculated as a simple average of topic accuracies (not weighted).
+ * 
+ * @interface LessonProgress
  */
 export interface LessonProgress {
   lessonId: string;
@@ -276,13 +301,29 @@ export interface LessonProgress {
 
 /**
  * Calculate lesson-level progress for a student
- * Aggregates topic metrics: accuracy = simple average of topic accuracies, total questions = sum of topic question counts
  * 
- * @param studentId - Student ID
- * @param lessonId - Lesson ID
- * @param teacherId - Teacher ID for tenant isolation (optional, for validation)
- * @returns LessonProgress object with aggregated metrics
- * @throws Error if studentId or lessonId invalid, or tenant isolation violation
+ * Aggregates progress metrics from all topics within a lesson. Calculates:
+ * - Lesson accuracy: Simple average of topic accuracies (not weighted by question count)
+ * - Lesson total questions: Sum of all topic question counts
+ * 
+ * Performance: Completes in < 500ms for typical datasets. Results are cached
+ * for 5 minutes. Automatically invalidates when any topic progress updates.
+ * 
+ * @param studentId - Student ID (required, must be valid UUID)
+ * @param lessonId - Lesson ID (required, must be valid UUID)
+ * @param teacherId - Teacher ID for tenant isolation validation (optional)
+ * @returns Promise resolving to LessonProgress object with aggregated metrics
+ * @throws {Error} If studentId or lessonId is invalid/empty
+ * @throws {Error} If student not found in database
+ * @throws {Error} If lesson not found or not accessible to teacher
+ * @throws {Error} If tenant isolation violation
+ * 
+ * @example
+ * ```typescript
+ * const lessonProgress = await calculateLessonProgress('student-123', 'lesson-456', 'teacher-789');
+ * console.log(`Lesson Accuracy: ${lessonProgress.accuracy}%`); // e.g., "Lesson Accuracy: 82.3%"
+ * console.log(`Total Questions: ${lessonProgress.totalQuestions}`); // e.g., "Total Questions: 1200"
+ * ```
  */
 export async function calculateLessonProgress(
   studentId: string,
@@ -521,6 +562,13 @@ export function invalidateStudentLessonProgressCache(studentId: string): void {
 
 /**
  * Dual metrics calculation result
+ * 
+ * Represents both Program Progress and Concept Mastery metrics for a student.
+ * These metrics provide comprehensive insights into student performance:
+ * - Program Progress: Completion rate (questions solved / questions assigned)
+ * - Concept Mastery: Accuracy rate (right answers / attempted questions)
+ * 
+ * @interface DualMetrics
  */
 export interface DualMetrics {
   programProgress: number; // Percentage: (total solved / total assigned) × 100
@@ -534,13 +582,32 @@ export interface DualMetrics {
 
 /**
  * Calculate dual metrics (Program Progress + Concept Mastery) for a student
- * Program Progress = (total questions solved) / (total questions assigned) × 100
- * Concept Mastery = (total right / total attempted) × 100
  * 
- * @param studentId - Student ID
- * @param teacherId - Teacher ID for tenant isolation (optional, for validation)
- * @returns DualMetrics object with both metrics
- * @throws Error if studentId invalid, or tenant isolation violation
+ * Calculates two complementary metrics:
+ * 1. **Program Progress**: (total solved / total assigned) × 100
+ *    - Measures how much of the assigned work the student has completed
+ *    - Includes right, wrong, empty, and bonus questions in "solved"
+ * 
+ * 2. **Concept Mastery**: (total right / total attempted) × 100
+ *    - Measures how accurately the student answers questions
+ *    - Only includes attempted questions (right + wrong + empty + bonus)
+ * 
+ * Performance: Completes in < 500ms for typical datasets. Results are cached
+ * for 5 minutes. Cache invalidates on ProgressLog or Assignment updates.
+ * 
+ * @param studentId - Student ID (required, must be valid UUID)
+ * @param teacherId - Teacher ID for tenant isolation validation (optional)
+ * @returns Promise resolving to DualMetrics object with both calculated metrics
+ * @throws {Error} If studentId is invalid/empty
+ * @throws {Error} If student not found in database
+ * @throws {Error} If tenant isolation violation
+ * 
+ * @example
+ * ```typescript
+ * const metrics = await calculateDualMetrics('student-123', 'teacher-789');
+ * console.log(`Program Progress: ${metrics.programProgress}%`); // e.g., "Program Progress: 75.5%"
+ * console.log(`Concept Mastery: ${metrics.conceptMastery}%`); // e.g., "Concept Mastery: 82.3%"
+ * ```
  */
 export async function calculateDualMetrics(
   studentId: string,

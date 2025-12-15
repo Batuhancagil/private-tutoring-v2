@@ -243,7 +243,7 @@ export function ProgressGraphs({ data, loading, dateRange }: ProgressGraphsProps
       {/* Question Count Graph */}
       <Card>
         <CardHeader>
-          <CardTitle id="question-count-title">
+          <CardTitle>
             {dateRange?.range === '90d' || dateRange?.range === 'all' 
               ? 'Weekly Question Count' 
               : 'Daily Question Count'}
@@ -293,7 +293,7 @@ export function ProgressGraphs({ data, loading, dateRange }: ProgressGraphsProps
       {/* Accuracy Trend Graph */}
       <Card>
         <CardHeader>
-          <CardTitle id="accuracy-trend-title">Accuracy Trend</CardTitle>
+          <CardTitle>Accuracy Trend</CardTitle>
         </CardHeader>
         <CardContent>
           <div 

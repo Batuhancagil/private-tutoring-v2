@@ -12,7 +12,7 @@ export async function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navigation user={user} />
-      <main className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-8 py-4 sm:py-6">
+      <main id="main-content" className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-8 py-4 sm:py-6" role="main">
         <div className="py-2 sm:py-4 lg:py-8">
           {children}
         </div>

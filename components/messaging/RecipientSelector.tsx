@@ -121,6 +121,13 @@ export function RecipientSelector({
     }
   }, [currentUserRole, currentUserId]);
 
+  // For students and parents, auto-select their teacher if only one recipient
+  useEffect(() => {
+    if ((currentUserRole === 'STUDENT' || currentUserRole === 'PARENT') && recipients.length === 1 && !selectedRecipientId) {
+      onSelectRecipient(recipients[0].id);
+    }
+  }, [recipients, currentUserRole, selectedRecipientId, onSelectRecipient]);
+
   if (loading) {
     return (
       <div className="text-sm text-gray-500 dark:text-gray-400">
@@ -148,13 +155,6 @@ export function RecipientSelector({
       </div>
     );
   }
-
-  // For students and parents, auto-select their teacher if only one recipient
-  useEffect(() => {
-    if ((currentUserRole === 'STUDENT' || currentUserRole === 'PARENT') && recipients.length === 1 && !selectedRecipientId) {
-      onSelectRecipient(recipients[0].id);
-    }
-  }, [recipients, currentUserRole, selectedRecipientId, onSelectRecipient]);
 
   return (
     <div className="space-y-2">

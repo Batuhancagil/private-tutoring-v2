@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useOnlineStatus } from '@/lib/hooks/useOnlineStatus';
 import { getPendingLogsCount } from '@/lib/offline-storage';
 import { syncPendingLogs } from '@/lib/sync-manager';
@@ -24,14 +24,7 @@ export function OfflineIndicator() {
     return () => clearInterval(interval);
   }, []);
 
-  // Auto-sync when coming online
-  useEffect(() => {
-    if (isOnline && pendingCount > 0 && !isSyncing) {
-      handleSync();
-    }
-  }, [isOnline, pendingCount, isSyncing]);
-
-  const handleSync = async () => {
+  const handleSync = useCallback(async () => {
     if (isSyncing || pendingCount === 0) {
       return;
     }
@@ -55,7 +48,14 @@ export function OfflineIndicator() {
     } finally {
       setIsSyncing(false);
     }
-  };
+  }, [isSyncing, pendingCount]);
+
+  // Auto-sync when coming online
+  useEffect(() => {
+    if (isOnline && pendingCount > 0 && !isSyncing) {
+      handleSync();
+    }
+  }, [isOnline, pendingCount, isSyncing, handleSync]);
 
   // Don't show indicator if online and no pending logs
   if (isOnline && pendingCount === 0 && !syncSuccess && !syncError) {
@@ -99,7 +99,7 @@ export function OfflineIndicator() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                You're offline
+                You&apos;re offline
               </p>
               {pendingCount > 0 && (
                 <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">

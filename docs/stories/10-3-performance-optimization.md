@@ -1,6 +1,6 @@
 # Story 10.3: Performance Optimization
 
-Status: drafted
+Status: review
 
 ## Story
 

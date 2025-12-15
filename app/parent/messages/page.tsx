@@ -25,7 +25,7 @@ export default async function ParentMessagesPage() {
             Messages
           </h1>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Communicate with your child's teacher
+            Communicate with your child&apos;s teacher
           </p>
         </div>
 

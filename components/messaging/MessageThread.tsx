@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { UserRole } from '@prisma/client';
 import { MessageBubble } from './MessageBubble';
 import { MessageComposer } from './MessageComposer';
 
@@ -11,12 +12,12 @@ interface Message {
   sender: {
     id: string;
     username: string;
-    role: string;
+    role: UserRole;
   };
   receiver: {
     id: string;
     username: string;
-    role: string;
+    role: UserRole;
   };
 }
 

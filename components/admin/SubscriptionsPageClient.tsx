@@ -19,6 +19,12 @@ interface Subscription {
   startDate: string;
   endDate: string;
   status: 'active' | 'expired' | 'upcoming';
+  expirationInfo?: {
+    daysUntilExpiration: number;
+    status: 'critical' | 'warning' | 'info' | 'none' | 'expired';
+    isExpired: boolean;
+    isExpiringSoon: boolean;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -29,8 +35,11 @@ interface Payment {
   amount: string;
   paymentDate: string;
   notes: string | null;
+  createdAt: string;
   subscription?: {
+    id: string;
     teacher: {
+      id: string;
       username: string;
     };
   };

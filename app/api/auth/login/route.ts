@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { verifyPassword, generateToken } from '@/lib/auth';
 import { logApiError } from '@/lib/error-logger';
 import { trackPerformance } from '@/lib/performance-monitor';
+import { checkSubscriptionAccess } from '@/lib/auth-helpers';
+import { UserRole } from '@prisma/client';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -48,6 +50,33 @@ export async function POST(request: NextRequest) {
         { error: 'Invalid username or password' },
         { status: 401 }
       );
+    }
+
+    // Check subscription status for teachers
+    if (user.role === UserRole.TEACHER) {
+      const userPayload = {
+        userId: user.id,
+        username: user.username,
+        role: user.role,
+        teacherId: user.teacherId,
+      };
+      
+      const hasActiveSubscription = await checkSubscriptionAccess(userPayload);
+      
+      if (!hasActiveSubscription) {
+        statusCode = 403;
+        const responseTime = Date.now() - startTime;
+        trackPerformance(endpoint, method, responseTime, statusCode);
+        logApiError('Login', 'Subscription expired', new Error('Subscription expired'), request);
+        return NextResponse.json(
+          { 
+            error: 'Subscription expired',
+            code: 'SUBSCRIPTION_EXPIRED',
+            redirect: '/subscription-expired'
+          },
+          { status: 403 }
+        );
+      }
     }
 
     // Generate JWT token

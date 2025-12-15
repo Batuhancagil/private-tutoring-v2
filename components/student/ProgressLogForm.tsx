@@ -128,7 +128,7 @@ export function ProgressLogForm() {
   // Fetch today's assignment and existing log on mount
   useEffect(() => {
     fetchDataForDate(selectedDate);
-  }, []);
+  }, [selectedDate]);
 
   // Try to sync pending logs when component mounts and is online
   useEffect(() => {
@@ -485,7 +485,7 @@ export function ProgressLogForm() {
           )}
 
           {success && (
-            <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
+            <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md" role="alert" aria-live="polite">
               <p className="text-base font-medium text-green-600 dark:text-green-400">
                 ✓ Progress saved successfully!
               </p>
@@ -496,12 +496,12 @@ export function ProgressLogForm() {
           )}
 
           {offlineSaved && (
-            <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
+            <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md" role="alert" aria-live="polite">
               <p className="text-base font-medium text-yellow-600 dark:text-yellow-400">
                 ⚠ Progress saved offline
               </p>
               <p className="text-sm text-yellow-600 dark:text-yellow-400 mt-1">
-                Your progress has been saved locally and will sync automatically when you're back online.
+                Your progress has been saved locally and will sync automatically when you&apos;re back online.
               </p>
             </div>
           )}
