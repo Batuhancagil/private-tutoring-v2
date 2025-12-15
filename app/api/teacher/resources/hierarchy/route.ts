@@ -7,6 +7,7 @@ import { trackPerformance } from '@/lib/performance-monitor';
 
 // Force dynamic rendering since this route uses cookies for authentication
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 /**
  * GET /api/teacher/resources/hierarchy

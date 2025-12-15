@@ -134,6 +134,13 @@ export function withAuth(
       const responseTime = Date.now() - startTime;
       trackPerformance(endpoint, method, responseTime, statusCode);
       
+      // Suppress "Dynamic server usage" errors during build time
+      // These are expected when Next.js tries to statically generate routes that use cookies
+      if (error instanceof Error && error.message.includes('Dynamic server usage')) {
+        // Re-throw to let Next.js handle it - this is expected for dynamic routes
+        throw error;
+      }
+      
       if (error instanceof Error && error.message === 'Authentication required') {
         logApiError('Auth', 'Authentication required', error, request);
         return NextResponse.json(
@@ -177,6 +184,13 @@ export function withRole(
       
       return await handler(request, user);
     } catch (error) {
+      // Suppress "Dynamic server usage" errors during build time
+      // These are expected when Next.js tries to statically generate routes that use cookies
+      if (error instanceof Error && error.message.includes('Dynamic server usage')) {
+        // Re-throw to let Next.js handle it - this is expected for dynamic routes
+        throw error;
+      }
+      
       if (error instanceof Error) {
         if (error.message === 'Authentication required') {
           logApiError('Auth', 'Authentication required', error, request);
@@ -201,6 +215,7 @@ export function withRole(
 
 /**
  * API route wrapper that handles multiple roles
+ * Also checks subscription status for teachers
  */
 export function withAnyRole(
   roles: UserRole[],
@@ -209,6 +224,23 @@ export function withAnyRole(
   return async (request: NextRequest) => {
     try {
       const user = await requireAnyRole(request, roles);
+      
+      // Check subscription status if TEACHER is in the allowed roles
+      if (roles.includes(UserRole.TEACHER) && user.role === UserRole.TEACHER) {
+        const hasActiveSubscription = await checkSubscriptionAccess(user);
+        if (!hasActiveSubscription) {
+          logApiError('Auth', 'Subscription expired', new Error('Subscription expired'), request);
+          return NextResponse.json(
+            { 
+              error: 'Subscription expired',
+              code: 'SUBSCRIPTION_EXPIRED',
+              redirect: '/subscription-expired'
+            },
+            { status: 403 }
+          );
+        }
+      }
+      
       return await handler(request, user);
     } catch (error) {
       if (error instanceof Error) {

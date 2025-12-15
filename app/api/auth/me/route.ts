@@ -5,6 +5,7 @@ import { logApiError } from '@/lib/error-logger';
 
 // Force dynamic rendering since this route uses cookies for authentication
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export const GET = withAuth(async (request: NextRequest, user) => {
   try {

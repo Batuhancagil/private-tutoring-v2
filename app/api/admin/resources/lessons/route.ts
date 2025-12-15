@@ -8,6 +8,7 @@ import { z } from 'zod';
 
 // Force dynamic rendering since this route uses cookies for authentication
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 const createGlobalLessonSchema = z.object({
   name: z.string().min(1, 'Lesson name is required'),
