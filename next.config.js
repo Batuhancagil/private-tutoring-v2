@@ -13,7 +13,7 @@ const nextConfig = {
   },
   // Experimental features for performance
   experimental: {
-    optimizeCss: true,
+    // optimizeCss: true, // Disabled - requires critters package
   },
   env: {
     DATABASE_URL: process.env.DATABASE_URL,
